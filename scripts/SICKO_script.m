@@ -17,7 +17,7 @@ image_integral_intensities = zeros(1,length(img_paths));
 image_integral_areas = zeros(1,length(img_paths));
 
 img_counter = 1;
-for i = 1:length(img_paths)
+for i = 39:length(img_paths)
     
     this_img = imread(fullfile(img_dir_path,img_paths(i).name));
     
@@ -25,10 +25,34 @@ for i = 1:length(img_paths)
     
     mask = imclose(bwareaopen(data>130,10,4),se);
     
+%     T = mean2(this_img)+3*std2(this_img);
+%     mask2 = bwareaopen(bwareaopen(data>T,10,4)-bwperim(imfill(mask,'holes')),10,4);
+%     mask2 = imgaussfilt(double(mask2),1.2)>0;
+    
     masked_data = mask.*double(data); % this converts the picture array to mathable stuff 
     
     if img_counter < 2
-        imshowpair(masked_data,this_img,'montage')
+        
+        figure('units','normalized','outerposition',[0 0 1 1])
+        
+        subplot(1,2,1)
+        Ifill = imfill(imgaussfilt(masked_data,10)>0,'holes');
+        B = bwboundaries(Ifill);
+        stat = regionprops(Ifill,'Centroid');
+        imshow(masked_data); hold on
+        title([char(img_paths(i).name) ' perimeter image'])
+        for k = 1 : length(B)
+            b = B{k};
+            c = stat(k).Centroid;
+            plot(b(:,2),b(:,1),'g','linewidth',2);
+%             text(c(1),c(2),num2str(k),'backgroundcolor','g');
+        end
+        
+        
+        subplot(1,2,2)
+        imshow(this_img,[])
+        
+%         imshowpair(masked_data,this_img,'montage')
         title(string(img_paths(i).name))
         drawnow;
         
@@ -59,9 +83,9 @@ for i = 1:length(img_paths)
     image_integral_intensities(i) = sum(cropped_data(:));
     image_integral_areas(i) = sum(cropped_data(:)>0);
     
-    linear_data = nonzeros(masked_data);
-        
-    [counts,binLoc] = hist(linear_data,255); 
+%     linear_data = nonzeros(masked_data);
+%         
+%     [counts,binLoc] = hist(linear_data,255); 
 %     stem(binLoc,counts)
         
 end
