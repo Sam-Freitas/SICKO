@@ -1,6 +1,11 @@
 clear all
 close all
-img_dir_path = uigetdir('\\fs.mcb.arizona.edu\LabSupport\Sutphin Lab\Projects\Worm infection\SICKO\');
+
+curr_path = pwd;
+
+data_path = fullfile(erase(curr_path,'scripts'),'data');
+
+img_dir_path = uigetdir(data_path);
 
 img_paths = dir(fullfile(img_dir_path, '*.tif'));
 [~,sort_idx,~] = natsort({img_paths.name});
@@ -8,6 +13,11 @@ img_paths = dir(fullfile(img_dir_path, '*.tif'));
 img_paths = img_paths(sort_idx);
 
 number_imgs_in_replicate = 3;
+
+check_replicate = img_paths/number_imgs_in_replicate;
+
+if check_replicate == floor(check_replicate)
+    
 
 se = strel('disk',3);
 
@@ -24,6 +34,10 @@ for i = 1:length(img_paths)
     data = this_img;
     
     mask = imclose(bwareaopen(data>130,10,4),se);
+    
+%     T = mean2(this_img)+3*std2(this_img);
+%     mask2 = bwareaopen(bwareaopen(data>T,10,4)-bwperim(imfill(mask,'holes')),10,4);
+%     mask2 = imgaussfilt(double(mask2),1.2)>0;
     
     masked_data = mask.*double(data); % this converts the picture array to mathable stuff 
     
@@ -49,7 +63,7 @@ for i = 1:length(img_paths)
         imshow(this_img,[])
         
 %         imshowpair(masked_data,this_img,'montage')
-        title(string(img_paths(i).name))
+        title(string([img_paths(i).name ' --- ' 'img:' num2str(i)]))
         drawnow;
         
         redo = questdlg({'Does this image have any contamination in it?',...
@@ -79,9 +93,9 @@ for i = 1:length(img_paths)
     image_integral_intensities(i) = sum(cropped_data(:));
     image_integral_areas(i) = sum(cropped_data(:)>0);
     
-    linear_data = nonzeros(masked_data);
-        
-    [counts,binLoc] = hist(linear_data,255); 
+%     linear_data = nonzeros(masked_data);
+%         
+%     [counts,binLoc] = hist(linear_data,255); 
 %     stem(binLoc,counts)
         
 end

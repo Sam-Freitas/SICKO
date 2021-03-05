@@ -1,6 +1,11 @@
 clear all
 close all
-img_dir_path = uigetdir('\\fs.mcb.arizona.edu\LabSupport\Sutphin Lab\Projects\Worm infection\SICKO\');
+
+curr_path = pwd;
+
+data_path = fullfile(erase(curr_path,'scripts'),'data');
+
+img_dir_path = uigetdir(data_path);
 
 img_paths = dir(fullfile(img_dir_path, '*.tif'));
 [~,sort_idx,~] = natsort({img_paths.name});
@@ -8,6 +13,16 @@ img_paths = dir(fullfile(img_dir_path, '*.tif'));
 img_paths = img_paths(sort_idx);
 
 number_imgs_in_replicate = 3;
+
+check_replicate = length(img_paths)/number_imgs_in_replicate;
+
+disp(['Processing data for:' img_dir_path])
+
+if check_replicate == floor(check_replicate)
+    disp('All images in replicate')
+else
+    error('Not all images in replicate')
+end
 
 se = strel('disk',3);
 
@@ -17,7 +32,7 @@ image_integral_intensities = zeros(1,length(img_paths));
 image_integral_areas = zeros(1,length(img_paths));
 
 img_counter = 1;
-for i = 39:length(img_paths)
+for i = 1:length(img_paths)
     
     this_img = imread(fullfile(img_dir_path,img_paths(i).name));
     
@@ -53,7 +68,7 @@ for i = 39:length(img_paths)
         imshow(this_img,[])
         
 %         imshowpair(masked_data,this_img,'montage')
-        title(string(img_paths(i).name))
+        title(string([img_paths(i).name ' --- ' 'img:' num2str(i)]))
         drawnow;
         
         redo = questdlg({'Does this image have any contamination in it?',...
