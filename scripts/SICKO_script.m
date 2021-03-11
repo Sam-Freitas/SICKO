@@ -26,6 +26,8 @@ end
 
 se = strel('disk',3);
 
+writematrix(string({img_paths.name}),[img_dir_path '\image_names.csv']);
+
 figure;
 
 image_integral_intensities = zeros(1,length(img_paths));
