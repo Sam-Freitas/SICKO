@@ -9,6 +9,8 @@ overarching_folder = uigetdir(data_path);
 
 
 ovr_dir = dir(overarching_folder);
+dirFlags = [ovr_dir.isdir];
+ovr_dir = ovr_dir(dirFlags);
 ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
 
 group_names = strings(length(ovr_dir),1);
@@ -22,6 +24,8 @@ end
 num_days_per_exp = zeros(1,length(ovr_dir));
 for i = 1:length(ovr_dir)
     temp_dir_step = dir(fullfile(ovr_dir(i).folder,ovr_dir(i).name));
+    dirFlags = [temp_dir_step.isdir];
+    temp_dir_step = temp_dir_step(dirFlags);
     temp_dir_step(ismember( {temp_dir_step.name}, {'.', '..'})) = [];  %remove . and ..
     
     num_days_per_exp(i) = length(temp_dir_step);

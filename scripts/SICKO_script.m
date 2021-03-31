@@ -1,6 +1,13 @@
 clear all
 close all
 
+% number of images in the replicate
+number_imgs_in_replicate = 3;
+
+% if you know 110% sure that there is ZERO contamination
+% usually for testing only
+zero_contamination = 1;
+
 curr_path = pwd;
 
 data_path = fullfile(erase(curr_path,'scripts'),'data');
@@ -11,8 +18,6 @@ img_paths = dir(fullfile(img_dir_path, '*.tif'));
 [~,sort_idx,~] = natsort({img_paths.name});
 
 img_paths = img_paths(sort_idx);
-
-number_imgs_in_replicate = 3;
 
 check_replicate = length(img_paths)/number_imgs_in_replicate;
 
@@ -73,11 +78,11 @@ for i = 1:length(img_paths)
         title(string([img_paths(i).name ' --- ' 'img:' num2str(i)]))
         drawnow;
         
-        redo = questdlg({'Does this image have any contamination in it?',...
+        dlg_choice = questdlg({'Does this image have any contamination in it?',...
             'If so draw rectange around the worm and double click it'},'Redo?','Yes','No','No');
         
         rect = [1 1 size(this_img)];
-        if isequal(redo,'Yes')
+        if isequal(dlg_choice,'Yes')
             
             [~,rect] = imcrop(masked_data);
             close all
