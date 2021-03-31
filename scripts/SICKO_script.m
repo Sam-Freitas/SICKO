@@ -6,13 +6,31 @@ number_imgs_in_replicate = 3;
 
 % if you know 110% sure that there is ZERO contamination
 % usually for testing only
-zero_contamination = 1;
+% keep at 0
+zero_contamination = 0;
+
+% delete all .csv's in each session folder and start again
+overwrite_csv = 1;
 
 curr_path = pwd;
 
 data_path = fullfile(erase(curr_path,'scripts'),'data');
 
 img_dir_path = uigetdir(data_path);
+
+if overwrite_csv
+    csv_paths = dir(fullfile(img_dir_path,'*.csv'));
+    
+    for i = 1:length(csv_paths)
+        delete(fullfile(csv_paths(i).folder,csv_paths(i).name));
+    end
+    
+    if ~isempty(csv_paths)
+        disp('Deleted old .csv files');
+    else
+        disp('No .csv to overwrite, starting from scratch');
+    end
+end
 
 img_paths = dir(fullfile(img_dir_path, '*.tif'));
 [~,sort_idx,~] = natsort({img_paths.name});
@@ -21,7 +39,7 @@ img_paths = img_paths(sort_idx);
 
 check_replicate = length(img_paths)/number_imgs_in_replicate;
 
-disp(['Processing data for:' img_dir_path])
+disp(['Processing data for: ' img_dir_path])
 
 if check_replicate == floor(check_replicate)
     disp('All images in replicate')
@@ -30,10 +48,9 @@ else
 end
 
 se = strel('disk',3);
+writematrix(string({img_paths.name}),fullfile(img_dir_path,'image_names.csv'));
 
-writematrix(string({img_paths.name}),[img_dir_path '\image_names.csv']);
-
-figure;
+figure('units','normalized','outerposition',[0 0 1 1])
 
 image_integral_intensities = zeros(1,length(img_paths));
 image_integral_areas = zeros(1,length(img_paths));
@@ -55,7 +72,9 @@ for i = 1:length(img_paths)
     
     if img_counter < 2
         
-        figure('units','normalized','outerposition',[0 0 1 1])
+        if ~zero_contamination
+            figure('units','normalized','outerposition',[0 0 1 1])
+        end
         
         subplot(1,2,1)
         Ifill = imfill(imgaussfilt(masked_data,10)>0,'holes');
@@ -71,6 +90,7 @@ for i = 1:length(img_paths)
         end
         
         
+        
         subplot(1,2,2)
         imshow(this_img,[])
         
@@ -78,8 +98,12 @@ for i = 1:length(img_paths)
         title(string([img_paths(i).name ' --- ' 'img:' num2str(i)]))
         drawnow;
         
-        dlg_choice = questdlg({'Does this image have any contamination in it?',...
-            'If so draw rectange around the worm and double click it'},'Redo?','Yes','No','No');
+        if ~zero_contamination
+            dlg_choice = questdlg({'Does this image have any contamination in it?',...
+                'If so draw rectange around the worm and double click it'},'Redo?','Yes','No','No');
+        else
+            dlg_choice = 'No';
+        end
         
         rect = [1 1 size(this_img)];
         if isequal(dlg_choice,'Yes')
@@ -100,7 +124,9 @@ for i = 1:length(img_paths)
         end
     end
     
-    close all
+    if ~zero_contamination
+        close all
+    end
     
     image_integral_intensities(i) = sum(cropped_data(:));
     image_integral_areas(i) = sum(cropped_data(:)>0);
@@ -111,7 +137,8 @@ for i = 1:length(img_paths)
 %     stem(binLoc,counts)
         
 end
+close all
 
-writematrix(image_integral_intensities,[img_dir_path '\image_integral_intensities.csv']);
-writematrix(image_integral_areas,[img_dir_path '\image_integral_areas.csv']);
+writematrix(image_integral_intensities,fullfile(img_dir_path,'image_integral_intensities.csv'));
+writematrix(image_integral_areas,fullfile(img_dir_path,'image_integral_areas.csv'));
 
