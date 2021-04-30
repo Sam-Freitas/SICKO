@@ -38,7 +38,6 @@ for n = 1:length(ovr_dir)
         group_names(i) = inner_dir(i).name;
         disp(group_names(i))
     end
-    k=1;
 
     num_sessions_per_exp = zeros(1,length(inner_dir));
     for i = 1:length(inner_dir)
@@ -48,17 +47,17 @@ for n = 1:length(ovr_dir)
         temp_dir_step(ismember( {temp_dir_step.name}, {'.', '..'})) = [];  %remove . and ..
         
         num_sessions_per_exp(i) = length(temp_dir_step);
-        for j = 1:length(temp_dir_step)
-            inner_session_names(k) = temp_dir_step(j).name;
-            k=k+1;
-        end
     end
-    % creates blank vector 
-    days = zeros(1,sum(num_sessions_per_exp));               
-    % iterates through inner names and converts to days
+
+    for i = 1:length(temp_dir_step)
+        inner_session_names(i) = temp_dir_step(i).name;
+    end
+       
+    days = zeros(1,sum(num_sessions_per_exp));
+    
     for i = 1:length(inner_session_names)
-        temp_string = char(inner_session_names(i)); 
-        %finds and isolates the last underscore
+        temp_string = char(inner_session_names(i));
+        
         underscore_indices = strfind(temp_string, '_');
         this_day = temp_string(underscore_indices(end)+2:end);
         
