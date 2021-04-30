@@ -4,6 +4,11 @@ close all
 % number of images in the replicate
 number_imgs_in_replicate = 3;
 
+% image threshold
+% 130 for RFP
+% 750 for GFP
+img_thresh = 130;
+
 % if you know 110% sure that there is ZERO contamination
 % usually for testing only
 % keep at 0
@@ -54,15 +59,19 @@ figure('units','normalized','outerposition',[0 0 1 1])
 
 image_integral_intensities = zeros(1,length(img_paths));
 image_integral_areas = zeros(1,length(img_paths));
+dead = zeros(1,length(img_paths));
+censored = zeros(1,length(img_paths));
 
 img_counter = 1;
 for i = 1:length(img_paths)
     
-    this_img = imread(fullfile(img_dir_path,img_paths(i).name));
+    this_img_path = fullfile(img_dir_path,img_paths(i).name);
+    
+    this_img = imread(this_img_path);
     
     data = this_img;
     
-    mask = imclose(bwareaopen(data>130,10,4),se);
+    mask = imclose(bwareaopen(data>img_thresh,10,4),se);
     
 %     T = mean2(this_img)+3*std2(this_img);
 %     mask2 = bwareaopen(bwareaopen(data>T,10,4)-bwperim(imfill(mask,'holes')),10,4);
@@ -74,25 +83,24 @@ for i = 1:length(img_paths)
         
         if ~zero_contamination
             figure('units','normalized','outerposition',[0 0 1 1])
+            
+            subplot(1,2,1)
+            Ifill = imfill(imgaussfilt(masked_data,10)>0,'holes');
+            B = bwboundaries(Ifill);
+            stat = regionprops(Ifill,'Centroid');
+            imshow(masked_data); hold on
+            title([char(img_paths(i).name) ' perimeter image'])
+            for k = 1 : length(B)
+                b = B{k};
+                c = stat(k).Centroid;
+                plot(b(:,2),b(:,1),'g','linewidth',2);
+                %             text(c(1),c(2),num2str(k),'backgroundcolor','g');
+            end
+            
+            
+            subplot(1,2,2)
+            imshow(this_img,[])
         end
-        
-        subplot(1,2,1)
-        Ifill = imfill(imgaussfilt(masked_data,10)>0,'holes');
-        B = bwboundaries(Ifill);
-        stat = regionprops(Ifill,'Centroid');
-        imshow(masked_data); hold on
-        title([char(img_paths(i).name) ' perimeter image'])
-        for k = 1 : length(B)
-            b = B{k};
-            c = stat(k).Centroid;
-            plot(b(:,2),b(:,1),'g','linewidth',2);
-%             text(c(1),c(2),num2str(k),'backgroundcolor','g');
-        end
-        
-        
-        
-        subplot(1,2,2)
-        imshow(this_img,[])
         
 %         imshowpair(masked_data,this_img,'montage')
         title(string([img_paths(i).name ' --- ' 'img:' num2str(i)]))
@@ -100,11 +108,38 @@ for i = 1:length(img_paths)
         
         if ~zero_contamination
             dlg_choice = questdlg({'Does this image have any contamination in it?',...
-                'If so draw rectange around the worm and double click it'},'Redo?','Yes','No','No');
+                'If so draw rectange around the worm and double click it'},'Redo?','Yes','No', 'Dead or Censored','No');
         else
             dlg_choice = 'No';
         end
         
+        if isequal(dlg_choice,'Dead or Censored')
+            dlg_choice2 = questdlg({'Is the worm dead or need to be censored?',...
+                ''},'Dead or Censored','Dead','Censored','Nevermind', 'Nevermind');
+        else 
+            dlg_choice2 = [];
+        end
+      
+        if isequal(dlg_choice2, 'Dead')
+            dead(i:i+2) = 1;
+        end
+        
+        if isequal(dlg_choice2, 'Censored')
+            censored(i:i+2) = 1;
+        end 
+        
+        if isequal(dlg_choice2,'Dead')
+            dlg_choice3 = questdlg({'Do you need to crop for contamination?',...
+                ''},'Crop', 'Yes', 'No', 'No');
+            if isequal(dlg_choice3,'Yes')
+                dlg_choice = 'Yes';
+            else 
+                dlg_choice3 = [];
+            end
+        else
+           dlg_choice3 = [];
+        end
+          
         rect = [1 1 size(this_img)];
         if isequal(dlg_choice,'Yes')
             
@@ -139,6 +174,12 @@ for i = 1:length(img_paths)
 end
 close all
 
-writematrix(image_integral_intensities,fullfile(img_dir_path,'image_integral_intensities.csv'));
-writematrix(image_integral_areas,fullfile(img_dir_path,'image_integral_areas.csv'));
 
+if ~(isempty(img_paths))
+    writematrix(image_integral_intensities,fullfile(img_dir_path,'image_integral_intensities.csv'));
+    writematrix(image_integral_areas,fullfile(img_dir_path,'image_integral_areas.csv'));
+    writematrix(dead,fullfile(img_dir_path,'dead.csv'));
+    writematrix(censored,fullfile(img_dir_path,'censored.csv'));
+else
+    disp('No images were detected, please select the correct folder')
+end
