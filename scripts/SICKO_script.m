@@ -4,10 +4,15 @@ close all
 % number of images in the replicate
 number_imgs_in_replicate = 3;
 
+% image threshold
+% 130 for RFP
+% 750 for GFP
+img_thresh = 130;
+
 % if you know 110% sure that there is ZERO contamination
 % usually for testing only
 % keep at 0
-zero_contamination = 1;
+zero_contamination = 0;
 
 % delete all .csv's in each session folder and start again
 overwrite_csv = 1;
@@ -66,7 +71,7 @@ for i = 1:length(img_paths)
     
     data = this_img;
     
-    mask = imclose(bwareaopen(data>130,10,4),se);
+    mask = imclose(bwareaopen(data>img_thresh,10,4),se);
     
 %     T = mean2(this_img)+3*std2(this_img);
 %     mask2 = bwareaopen(bwareaopen(data>T,10,4)-bwperim(imfill(mask,'holes')),10,4);
