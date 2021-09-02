@@ -150,8 +150,6 @@ for i = 1:length(unique_locs)
     unique_final_no_day_session(this_idx,3) = unique_locs(i);
 end
 
-% unique_final_no_day_session = cellstr(unique(unique_iden_str(:,[1,2,5]),'rows'));
-
 T1 = cell2table(unique_final_no_day_session);
 T2 = cell2table(isolated_data);
 
@@ -164,4 +162,6 @@ header_names = cellstr(["Biological Replicate",...
 final_table.Properties.VariableNames = header_names;
 
 writetable(final_table,'test.csv');
+
+
 
