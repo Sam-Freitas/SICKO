@@ -1,8 +1,10 @@
 clear all
 
 % get csv
-CSV_filepath = "/Users/samfreitas/Documents/Sutphin lab/SICKO/data/3HAA Iron.csv";
-csv_table= readtable(CSV_filepath,'VariableNamingRule','preserve'); % Your parsing will be different
+[CSV_filename,CSV_filepath] = uigetfile('/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments/*.csv',...
+                        'Select the Experiment csv File');
+                  
+csv_table= readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve'); % Your parsing will be different
 
 % convert identifiers to cell
 identifiers = table2cell(csv_table(:,[2:6]));
@@ -161,7 +163,14 @@ header_names = cellstr(["Biological Replicate",...
 
 final_table.Properties.VariableNames = header_names;
 
-writetable(final_table,'test.csv');
+out_path = CSV_filepath;
+
+[~,in_name,~] = fileparts(CSV_filename);
+out_name =  [in_name '_compiled.csv'];
+
+writetable(final_table,fullfile(out_path,out_name));
+
+
 
 
 
