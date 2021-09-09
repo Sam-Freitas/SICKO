@@ -141,9 +141,18 @@ for i = 1:length(conditions)
     % to rgb
     temp_img = ind2rgb(round(rescale(this_conditions_data,0,this_scale))...
         , parula(256));
+    
+    infection_seperation_idx = find(data_is_infected_bool(sort_idx)==1,1,'first');
+    
+    if ~isempty(infection_seperation_idx)
+        white_line = 255*ones(1,size(temp_img,2),3);
+        temp_img2 = [temp_img(1:infection_seperation_idx
+    else
+        temp_img2 = temp_img;
+    end
     % make it square
-    temp_img = imresize(temp_img,[size(temp_img,1),size(temp_img,1)],'nearest');
-    this_conditions_data_sq = imresize(this_conditions_data,[size(temp_img,1),size(temp_img,1)],'nearest');
+    temp_img2 = imresize(temp_img2,[size(temp_img2,1),size(temp_img2,1)],'nearest');
+    this_conditions_data_sq = imresize(this_conditions_data,[size(temp_img2,1),size(temp_img2,1)],'nearest');
     % find deaths and censors
     [row_death,col_death] = find(this_conditions_data_sq == -1);
     [row_nan,col_nan] = find(isnan(this_conditions_data_sq));
@@ -155,23 +164,12 @@ for i = 1:length(conditions)
         temp_img(row_nan(j),col_nan(j),:) = [0,0,0];
     end
     
-    infection_seperation_idx = find(data_is_infected_bool(sort_idx)==1,1,'first');
-    
-    if ~isempty(infection_seperation_idx)
-        white_line = 255*ones(1,size(temp_img,2),3);
-        temp_img2 = [temp_img(1:infection_seperation_idx-1,:,:);...
-            white_line;...
-            temp_img(infection_seperation_idx:end,:,:)];
-    else
-        temp_img2 = temp_img;
-    end
-    
     num_dead = length(unique(row_death));
     num_worms = sum(this_condition_idx);
     num_infected = sum(data_across_time_integrated>0);
     
-    temp_img2 = imresize(temp_img2,[1000,1000],'nearest');
-    imshow(temp_img2);
+    temp_img = imresize(temp_img,[1000,1000],'nearest');
+    imshow(temp_img);
     xlabel('sessions');
     ylabel(["individual animals", ...
         string([num2str(num_dead) '/' num2str(num_worms) ' dead']), ...
