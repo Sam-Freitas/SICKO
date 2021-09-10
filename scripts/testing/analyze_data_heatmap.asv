@@ -269,6 +269,7 @@ for i = 1:length(data_sess_died)
     % animal in the data
     this_data_inten = data_intensity(i,:);
     this_data_area = data_area(i,:);
+    this_data_censor = data_censor(i,:);
     x = 1:length(this_data_inten);
     
     % try to find the first session that it was infected
@@ -348,14 +349,17 @@ for i = 1:size(data_area,1)
     
 end
 
-output_name = [char(CSV_filename) '_analyzed.csv'];
+[~,out_name,~] = fileparts(char(CSV_filename));
+
+output_name = [char(out_name) '_analyzed.csv'];
 
 output_path = fullfile(CSV_filepath,output_name);
 
+disp(output_path);
 
-T = talbe(final_array);
+T = cell2table(final_array,'VariableNames',csv_output_header);
 
-writetable(T,output_
+writetable(T,output_path);
 
 
 

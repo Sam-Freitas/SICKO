@@ -269,6 +269,8 @@ for i = 1:length(data_sess_died)
     % animal in the data
     this_data_inten = data_intensity(i,:);
     this_data_area = data_area(i,:);
+    this_data_censor = data_censor(i,:);
+    this_data_censor(isnan(this_data_censor)) = 1;
     x = 1:length(this_data_inten);
     
     % try to find the first session that it was infected
@@ -280,8 +282,16 @@ for i = 1:length(data_sess_died)
     % so the length of the experiment is the last observed day
     this_last_sess_idx(this_last_sess_idx<0) = size(data_area,2);
     
+    if isequal(this_last_sess_idx,size(data_area,2))
+        this_last_sess_idx = find(~logical(this_data_censor),1,'last');
+        
+        if isempty(this_last_sess_idx)
+            this_last_sess_idx = NaN;
+        end
+    end
+    
     % if there is a session with nonzeros isolate the specifc data
-    if ~isempty(this_first_sess_idx)
+    if ~isempty(this_first_sess_idx) && ~isnan(this_last_sess_idx)
         first_sess_nonzero_data(i) = this_first_sess_idx;
         
         first_sess_of_infection_intensity(i) = data_intensity(i,this_first_sess_idx);
@@ -359,8 +369,6 @@ disp(output_path);
 T = cell2table(final_array,'VariableNames',csv_output_header);
 
 writetable(T,output_path);
-
-
 
 end
 
