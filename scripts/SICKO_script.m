@@ -7,21 +7,29 @@ number_imgs_in_replicate = 3;
 % image threshold
 % 130 for RFP
 % 750 for GFP
-img_thresh = 130;
+img_thresh = 2100;
 
 % if you know 110% sure that there is ZERO contamination
 % usually for testing only
 % keep at 0
-zero_contamination = 0;
+zero_contamination = 1;
 
 % delete all .csv's in each session folder and start again
 overwrite_csv = 1;
 
+% Georges border subtraction for session to session fix
+use_border_subtraction = 0;
+
 curr_path = pwd;
 
 data_path = fullfile(erase(curr_path,'scripts'),'data');
+luis_path_mac = '/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments';
 
-img_dir_path = uigetdir(data_path);
+if isfolder(luis_path_mac)
+    img_dir_path = uigetdir(luis_path_mac);
+else
+    img_dir_path = uigetdir(data_path);
+end
 
 if overwrite_csv
     csv_paths = dir(fullfile(img_dir_path,'*.csv'));
@@ -163,8 +171,28 @@ for i = 1:length(img_paths)
         close all
     end
     
-    image_integral_intensities(i) = sum(cropped_data(:));
-    image_integral_areas(i) = sum(cropped_data(:)>0);
+    if use_border_subtraction
+        % get the cropped data of the raw values
+        cropped_data_raw = double(data(rect(2):(rect(2)+rect(4)-1),rect(1):(rect(1)+rect(3)-1)));
+        cropped_data_mask = cropped_data>0;
+        % use the inital mask and thicken it 25x then subtract the inital
+        % mask off and create a mask from that, should be only thick borders 
+        border_mask = (bwmorph(cropped_data_mask,'thicken',25)-cropped_data_mask)>0;
+        % get all the pixels from the border mask (vector)
+        border_pixels = nonzeros(border_mask.*cropped_data_raw);
+        % get mean of said pixels
+        mean_of_border_pixels_to_subtract = mean2(border_pixels);
+        % subtract the mean off and round all negative values to zero
+        cropped_data_norm = cropped_data - mean_of_border_pixels_to_subtract;
+        cropped_data_norm(cropped_data_norm<0) = 0;
+        % integrate across the masks
+        image_integral_intensities(i) = sum(cropped_data_norm(:));
+        image_integral_areas(i) = sum(cropped_data_norm(:)>0);
+        
+    else
+        image_integral_intensities(i) = sum(cropped_data(:));
+        image_integral_areas(i) = sum(cropped_data(:)>0);
+    end
     
 %     linear_data = nonzeros(masked_data);
 %         
