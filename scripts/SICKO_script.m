@@ -12,13 +12,13 @@ img_thresh = 2100;
 % if you know 110% sure that there is ZERO contamination
 % usually for testing only
 % keep at 0
-zero_contamination = 1;
+zero_contamination = 0;
 
 % delete all .csv's in each session folder and start again
 overwrite_csv = 1;
 
 % Georges border subtraction for session to session fix
-use_border_subtraction = 0;
+use_border_subtraction = 1;
 
 curr_path = pwd;
 
