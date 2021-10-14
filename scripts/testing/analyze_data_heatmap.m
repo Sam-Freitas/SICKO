@@ -99,6 +99,8 @@ non_cen_data_area(idx_2d_data_to_keep==-1) = -1;
 non_cen_data_intensity = data_intensity.*idx_2d_data_to_keep;
 non_cen_data_intensity(idx_2d_data_to_keep==-1) = -1;
 
+[~,exp_name,~] = fileparts(CSV_filename);
+
 data_to_csv(csv_output_header,csv_table,...
     CSV_filename,CSV_filepath,...
     data_intensity,data_area,data_censor,data_dead,...
@@ -107,16 +109,16 @@ data_to_csv(csv_output_header,csv_table,...
 display_data(non_cen_data_area,logical(idx_infected.*(~idx_only_single_point)),...
     conditions,csv_table,data_censor,'Integrated_Area')
 
-heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Area')
-heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Intensity')
+heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name)
+heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name)
 
 
 
-function heatmap_data(this_data,idx_yes,conditions,csv_table,data_sess_died,title_ext)
+function heatmap_data(this_data,idx_yes,conditions,csv_table,data_sess_died,title_ext,CSV_filepath,exp_name)
 
 overall_max = max(max(this_data(idx_yes,:)));
 
-figure('units','normalized','outerposition',[0 0 1 1]);
+g = figure('units','normalized','outerposition',[0 0 1 1]);
 
 x = 1:size(this_data,2);
 for i = 1:length(conditions)
@@ -196,6 +198,10 @@ for i = 1:length(conditions)
 
     
 end
+
+out_name = strrep([exp_name '_' title_ext '.png'],' ','_');
+
+saveas(g,fullfile(CSV_filepath,out_name))
 
 end
 
@@ -370,10 +376,6 @@ T = cell2table(final_array,'VariableNames',csv_output_header);
 
 writetable(T,output_path);
 
-<<<<<<< HEAD
-
-=======
->>>>>>> fa777bec14be86bcb5e0659a987226a116120e07
 end
 
 
