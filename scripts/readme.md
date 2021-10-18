@@ -15,6 +15,6 @@ SICKO scripts and associated files
 3.  Run Complile_data.m on the combined csv
         - will create experiment_compiled.csv
 
-4.  Run Analyze_data.m on the _compiled.csv (first then _heatmap.m) 
+4.  Run Analyze_data_heatmap.m on the _compiled.csv 
         - will create experiment_analyzed.m
 

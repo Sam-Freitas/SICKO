@@ -431,6 +431,14 @@ if ~mean_plot
                 this_conditon2 = this_conditon;
                 this_conditon2(this_conditon2==0) = NaN;
                 
+                for k = 1:size(this_conditon2,1)
+                    this_conditon_temp = this_conditon2(k,:);
+                    
+                    this_conditon_temp(this_conditon_temp<0) = max(this_conditon_temp(:));
+                    
+                    this_conditon2(k,:) = this_conditon_temp;
+                end
+                
                 this_worm = mean(this_conditon2,1,'omitnan');
                 
                 plot(x,this_worm,'LineWidth',4,'Color','k')
@@ -475,6 +483,14 @@ else
                 this_conditon2 = this_conditon;
                 this_conditon2(this_conditon2==0) = NaN;
                 
+                for k = 1:size(this_conditon2,1)
+                    this_conditon_temp = this_conditon2(k,:);
+                    
+                    this_conditon_temp(this_conditon_temp<0) = max(this_conditon_temp(:));
+                    
+                    this_conditon2(k,:) = this_conditon_temp;
+                end
+                
                 this_worm = mean(this_conditon2,1,'omitnan');
                 
                 plot(x,this_worm,'LineWidth',4)
@@ -483,11 +499,12 @@ else
             
         end
         
-        hold off
         
     end
     
     legend(conditions,'location','north','orientation','horizontal','Interpreter','None')
+    
+    hold off
     
     output_name = [exp_name '_' title_ext '_' ylim_mode 'means.png'];
     
