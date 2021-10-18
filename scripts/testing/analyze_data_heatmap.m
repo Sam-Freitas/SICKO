@@ -112,6 +112,20 @@ display_data(non_cen_data_area,logical(idx_infected.*(~idx_only_single_point)),.
 heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name)
 heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name)
 
+plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+    'auto','Integrated_Area',0,exp_name,CSV_filepath)
+plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+    'max','Integrated_Area',0,exp_name,CSV_filepath)
+plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+    'max','Integrated_Area',1,exp_name,CSV_filepath)
+
+plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+    'auto','Integrated_Intensity',0,exp_name,CSV_filepath)
+plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+    'max','Integrated_Intensity',0,exp_name,CSV_filepath)
+plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+    'max','Integrated_Intensity',1,exp_name,CSV_filepath)
+
 
 
 function heatmap_data(this_data,idx_yes,conditions,csv_table,data_sess_died,title_ext,CSV_filepath,exp_name)
@@ -381,6 +395,107 @@ end
 
 
 
+function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_name,CSV_filepath)
+
+g = figure('units','normalized','outerposition',[0 0 1 1]);
+title(exp_name,'Interpreter','None');
+
+overall_max = max(max(this_data(idx_yes,:)));
+
+if ~mean_plot
+    
+    x = 1:size(this_data,2);
+    for i = 1:length(conditions)
+        
+        subplot(ceil(length(conditions)/2),2,i)
+        
+        title([conditions(i) '_' title_ext],'interpreter','none');
+        hold on
+        
+        this_condition_idx = string(csv_table.Condition) == conditions(i);
+        
+        this_condition_idx = logical(idx_yes.*this_condition_idx);
+        
+        this_conditon = this_data(this_condition_idx,:);
+        
+        if isequal(ylim_mode,'max')
+            ylim([0,overall_max])
+        elseif isequal(ylim_mode,'auto')
+            ylim([0,max(this_conditon(:))])
+        end
+        
+        for j = 1:size(this_conditon,1) + 1
+            
+            if isequal(j,size(this_conditon,1) + 1)
+                
+                this_conditon2 = this_conditon;
+                this_conditon2(this_conditon2==0) = NaN;
+                
+                this_worm = mean(this_conditon2,1,'omitnan');
+                
+                plot(x,this_worm,'LineWidth',4,'Color','k')
+                
+            else
+                this_worm = this_conditon(j,:);
+                
+                plot(x,this_worm);
+            end
+            
+        end
+        
+        hold off
+        
+    end
+    
+    output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
+    
+else
+    
+    x = 1:size(this_data,2);
+    for i = 1:length(conditions)
+                
+        hold on
+        
+        this_condition_idx = string(csv_table.Condition) == conditions(i);
+        
+        this_condition_idx = logical(idx_yes.*this_condition_idx);
+        
+        this_conditon = this_data(this_condition_idx,:);
+        
+        if isequal(ylim_mode,'max')
+            ylim([0,overall_max])
+        elseif isequal(ylim_mode,'auto')
+            ylim([0,max(this_conditon(:))])
+        end
+        
+        for j = 1:size(this_conditon,1) + 1
+            
+            if isequal(j,size(this_conditon,1) + 1)
+                
+                this_conditon2 = this_conditon;
+                this_conditon2(this_conditon2==0) = NaN;
+                
+                this_worm = mean(this_conditon2,1,'omitnan');
+                
+                plot(x,this_worm,'LineWidth',4)
+                
+            end
+            
+        end
+        
+        hold off
+        
+    end
+    
+    legend(conditions,'location','north','orientation','horizontal','Interpreter','None')
+    
+    output_name = [exp_name '_' title_ext '_' ylim_mode 'means.png'];
+    
+end
+
+saveas(g,fullfile(CSV_filepath,output_name));
+
+end
 
 
 

@@ -11,7 +11,12 @@ identifiers = table2cell(csv_table(:,[2:6]));
 data = table2array(csv_table(:,[8:11]));
 full_paths = csv_table.("Full Path");
 repeats = csv_table.("Biological Replicate");
-conditions = csv_table.Condition;
+try
+    conditions = csv_table.Condition;
+catch
+    disp('conditions not found using Strain (group) instead')
+    conditions = csv_table.("Strain (group)");
+end
 sessions = csv_table.Session;
 days = csv_table.Day;
 locations = csv_table.("ID (well location)");
@@ -166,7 +171,6 @@ final_table.Properties.VariableNames = header_names;
 out_path = CSV_filepath;
 
 [~,in_name,~] = fileparts(CSV_filename);
-mkdir(fullfile(CSV_filepath,[in_name '_outputs']));
 out_name =  [in_name '_compiled.csv'];
 
 writetable(final_table,fullfile(out_path,out_name));

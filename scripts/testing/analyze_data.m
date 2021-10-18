@@ -81,22 +81,22 @@ non_cen_data_intensity = data_intensity.*idx_2d_data_to_keep;
 display_data(non_cen_data_area,idx_yes,conditions,csv_table,data_censor,'Integrated_Area')
 
 plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    'auto','Integrated_Area',0,exp_nm)
+    'auto','Integrated_Area',0,exp_nm,CSV_filepath)
 plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    'max','Integrated_Area',0,exp_nm)
+    'max','Integrated_Area',0,exp_nm,CSV_filepath)
 plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    'max','Integrated_Area',1,exp_nm)
+    'max','Integrated_Area',1,exp_nm,CSV_filepath)
 
 plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'auto','Integrated_Intensity',0,exp_nm)
+    'auto','Integrated_Intensity',0,exp_nm,CSV_filepath)
 plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'max','Integrated_Intensity',0,exp_nm)
+    'max','Integrated_Intensity',0,exp_nm,CSV_filepath)
 plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'max','Integrated_Intensity',1,exp_nm)
+    'max','Integrated_Intensity',1,exp_nm,CSV_filepath)
 
 
 
-function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_nm)
+function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_nm,CSV_filepath)
 
 g = figure('units','normalized','outerposition',[0 0 1 1]);
 title(exp_nm,'Interpreter','None');
@@ -148,6 +148,8 @@ if ~mean_plot
         
     end
     
+    output_name = [exp_nm '_' title_ext '_' ylim_mode '.png'];
+    
 else
     
     x = 1:size(this_data,2);
@@ -188,7 +190,11 @@ else
     
     legend(conditions,'location','north','orientation','horizontal','Interpreter','None')
     
+    output_name = [exp_nm '_' title_ext '_' ylim_mode 'means.png'];
+    
 end
+
+saveas(g,fullfile(CSV_filepath,output_name));
 
 end
 

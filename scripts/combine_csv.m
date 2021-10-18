@@ -77,7 +77,11 @@ for n = 1:length(ovr_dir)
     clear group_names2
     
     % mainFolder = uigetdir();    % Selectyour Main folder
-    [~,message,~] = fileattrib([fullfile(ovr_dir(n).folder,ovr_dir(n).name),'\*']);
+    if ispc
+        [~,message,~] = fileattrib([fullfile(ovr_dir(n).folder,ovr_dir(n).name),'\*']);
+    else
+        [~,message,~] = fileattrib([fullfile(ovr_dir(n).folder,ovr_dir(n).name),'/*']);
+    end
     
     fprintf('\nThere are %i total files & folders in the overarching folder.\n',numel(message));
     
@@ -165,10 +169,10 @@ mkdir(fullfile(final_save_path,[final_save_name '_outputs']));
 
 try
     T = cell2table(final_csv,'VariableNames',csv_header);
-    writetable(T,fullfile(data_path,[final_save_name '.csv']))
+    writetable(T,fullfile(final_save_path,[final_save_name '_outputs'],[final_save_name '.csv']))
     
     disp('Data saved to:')
-    disp(fullfile(data_path,[final_save_name '.csv']))
+    disp(fullfile(final_save_path,[final_save_name '_outputs']))
 catch
     disp('CSV probably open, saving to _1')
     T = cell2table(final_csv,'VariableNames',csv_header);
