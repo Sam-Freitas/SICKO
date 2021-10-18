@@ -1,11 +1,12 @@
 clear all
 curr_path = pwd;
 
-data_path = fullfile('/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments/');
+data_path = fullfile(erase(curr_path,'scripts'),'data');
 
 overarching_folder = uigetdir(data_path);
 
-[final_save_path,final_save_name,~] = fileparts(overarching_folder);
+[~,final_save_name,~] = fileparts(overarching_folder);
+
 
 ovr_dir = dir(overarching_folder);
 dirFlags = [ovr_dir.isdir];
@@ -161,7 +162,7 @@ for n = 1:length(ovr_dir)
     end
 end
 
-mkdir(fullfile(final_save_path,[final_save_name '_outputs']));
+mkdir(fullfile(CSV_filepath,[in_name '_outputs']));
 
 try
     T = cell2table(final_csv,'VariableNames',csv_header);

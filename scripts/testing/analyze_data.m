@@ -14,6 +14,8 @@ condition_idx = 1:length(conditions);
 % get names of the csv
 csv_names = csv_table.Properties.VariableNames;
 
+[~,exp_nm,~] = fileparts(CSV_filename);
+
 % set up variables
 col_intensity = contains(string(csv_names),"Intensity");
 col_area = contains(string(csv_names),"Area");
@@ -68,7 +70,7 @@ idx_2d_data_to_keep = ones(size(data_dead));
 idx_2d_data_to_keep(data_censor==1) = NaN;
 % remove all dead data
 for i = 1:length(data_sess_died)
-    if data_sess_died(i) > 0 
+    if data_sess_died(i) > 0
         idx_2d_data_to_keep(i,data_sess_died(i):end) = NaN;
     end
 end
@@ -78,60 +80,113 @@ non_cen_data_intensity = data_intensity.*idx_2d_data_to_keep;
 
 display_data(non_cen_data_area,idx_yes,conditions,csv_table,data_censor,'Integrated_Area')
 
-plot_data(non_cen_data_area,idx_yes,conditions,csv_table,'auto','Integrated_Area')
-plot_data(non_cen_data_area,idx_yes,conditions,csv_table,'max','Integrated_Area')
+plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+    'auto','Integrated_Area',0,exp_nm)
+plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+    'max','Integrated_Area',0,exp_nm)
+plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+    'max','Integrated_Area',1,exp_nm)
 
-plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,'auto','Integrated_Intensity')
-plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,'max','Integrated_Intensity')
+plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+    'auto','Integrated_Intensity',0,exp_nm)
+plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+    'max','Integrated_Intensity',0,exp_nm)
+plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+    'max','Integrated_Intensity',1,exp_nm)
 
 
 
-function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext)
+function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_nm)
 
-figure;
+g = figure('units','normalized','outerposition',[0 0 1 1]);
+title(exp_nm,'Interpreter','None');
 
 overall_max = max(max(this_data(idx_yes,:)));
 
-x = 1:size(this_data,2);
-for i = 1:length(conditions)
+if ~mean_plot
     
-    subplot(ceil(length(conditions)/2),2,i)
-    
-    title([conditions(i) '_' title_ext],'interpreter','none');
-    hold on
-    
-    this_condition_idx = string(csv_table.Condition) == conditions(i);
-    
-    this_condition_idx = logical(idx_yes.*this_condition_idx);
-    
-    this_conditon = this_data(this_condition_idx,:);
-    
-    if isequal(ylim_mode,'max')
-        ylim([0,overall_max])
-    elseif isequal(ylim_mode,'auto')
-        ylim([0,max(this_conditon(:))])
-    end
-    
-    for j = 1:size(this_conditon,1) + 1
+    x = 1:size(this_data,2);
+    for i = 1:length(conditions)
         
-        if isequal(j,size(this_conditon,1) + 1)
-            
-            this_conditon2 = this_conditon;
-            this_conditon2(this_conditon2==0) = NaN;
-            
-            this_worm = mean(this_conditon2,1,'omitnan');
-            
-            plot(x,this_worm,'LineWidth',4,'Color','k')
-            
-        else
-            this_worm = this_conditon(j,:);
-            
-            plot(x,this_worm);
+        subplot(ceil(length(conditions)/2),2,i)
+        
+        title([conditions(i) '_' title_ext],'interpreter','none');
+        hold on
+        
+        this_condition_idx = string(csv_table.Condition) == conditions(i);
+        
+        this_condition_idx = logical(idx_yes.*this_condition_idx);
+        
+        this_conditon = this_data(this_condition_idx,:);
+        
+        if isequal(ylim_mode,'max')
+            ylim([0,overall_max])
+        elseif isequal(ylim_mode,'auto')
+            ylim([0,max(this_conditon(:))])
         end
         
+        for j = 1:size(this_conditon,1) + 1
+            
+            if isequal(j,size(this_conditon,1) + 1)
+                
+                this_conditon2 = this_conditon;
+                this_conditon2(this_conditon2==0) = NaN;
+                
+                this_worm = mean(this_conditon2,1,'omitnan');
+                
+                plot(x,this_worm,'LineWidth',4,'Color','k')
+                
+            else
+                this_worm = this_conditon(j,:);
+                
+                plot(x,this_worm);
+            end
+            
+        end
+        
+        hold off
+        
     end
     
-    hold off
+else
+    
+    x = 1:size(this_data,2);
+    for i = 1:length(conditions)
+                
+        hold on
+        
+        this_condition_idx = string(csv_table.Condition) == conditions(i);
+        
+        this_condition_idx = logical(idx_yes.*this_condition_idx);
+        
+        this_conditon = this_data(this_condition_idx,:);
+        
+        if isequal(ylim_mode,'max')
+            ylim([0,overall_max])
+        elseif isequal(ylim_mode,'auto')
+            ylim([0,max(this_conditon(:))])
+        end
+        
+        for j = 1:size(this_conditon,1) + 1
+            
+            if isequal(j,size(this_conditon,1) + 1)
+                
+                this_conditon2 = this_conditon;
+                this_conditon2(this_conditon2==0) = NaN;
+                
+                this_worm = mean(this_conditon2,1,'omitnan');
+                
+                plot(x,this_worm,'LineWidth',4)
+                
+            end
+            
+        end
+        
+        hold off
+        
+    end
+    
+    legend(conditions,'location','north','orientation','horizontal','Interpreter','None')
     
 end
 

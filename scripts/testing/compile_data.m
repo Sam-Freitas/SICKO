@@ -166,6 +166,7 @@ final_table.Properties.VariableNames = header_names;
 out_path = CSV_filepath;
 
 [~,in_name,~] = fileparts(CSV_filename);
+mkdir(fullfile(CSV_filepath,[in_name '_outputs']));
 out_name =  [in_name '_compiled.csv'];
 
 writetable(final_table,fullfile(out_path,out_name));
