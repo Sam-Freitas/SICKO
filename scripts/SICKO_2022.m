@@ -6,6 +6,8 @@ number_imgs_in_replicate = 3;
 
 % image threshold
 % 130 for RFP
+
+
 % 750 for GFP
 img_thresh = 1200;
 
@@ -35,13 +37,14 @@ if overwrite_csv
     overwrite_file(exp_dir_path);
 end 
 
-%using GUI prompts user to select dead/fled worms across experiment 
-%gets dead and fled data
-[dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path);
-
 ovr_dir = dir(exp_dir_path);   %get directory of experiment
 ovr_dir = ovr_dir([ovr_dir.isdir]);                   %flag and get only directorys
 ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
+
+%using GUI prompts user to select dead/fled worms across experiment 
+%gets dead and fled data
+%(wells,worms,path)
+[dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,length(ovr_dir));
 
 for count = 1:length(ovr_dir)
     
@@ -80,6 +83,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
             if day >= (dead_data(worm_num,well_num) || fled_data(worm_num,well_num))
                 if dead_data(worm_num,well_num)~=0
                     flag = 1;
+                    dead(i:i+2) = 1;
                 elseif fled_data(worm_num,well_num)~=0
                     flag = 2;
                 else 
@@ -101,7 +105,8 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
     %     mask2 = imgaussfilt(double(mask2),1.2)>0;
 
         masked_data = mask.*double(data); % this converts the picture array to mathable stuff 
-
+        prompt_quit = 'No';
+        
             if img_counter < 2 && flag == 0
 
                 if ~zero_contamination
@@ -132,45 +137,61 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
                 if ~zero_contamination
                     dlg_choice = questdlg({'Does this image have any contamination in it?',...
                         'If so draw rectange around the worm and double click it'},'Redo?','Yes','No', 'Dead or Censored','No');
-                else
+                else 
                     dlg_choice = 'No';
                 end
-
+                
                 if isequal(dlg_choice,'Dead or Censored')
                     dlg_choice2 = questdlg({'Is the worm dead or need to be censored?',...
                         ''},'Dead or Censored','Dead','Censored','Nevermind', 'Nevermind');
-                else 
-                    dlg_choice2 = [];
+                elseif dlg_choice == ""
+                    prompt_quit = questdlg('Do you want to quit?','Quit','Yes','No','No');
+                    if isequal(prompt_quit,'Yes')
+                        close all;
+                        error('User quit');
+                    else
+                        dlg_choice2 = 'Nevermind';
+                    end
+                else
+                    dlg_choice2 = 'Nevermind';
                 end
-
+                
                 if isequal(dlg_choice2, 'Dead')
                     dead(i:i+2) = 1;
                 end
-
+                
                 if isequal(dlg_choice2, 'Censored')
                     censored(i:i+2) = 1;
-                end 
-
+                end
+                
                 if isequal(dlg_choice2,'Dead')
                     dlg_choice3 = questdlg({'Do you need to crop for contamination?',...
                         ''},'Crop', 'Yes', 'No', 'No');
                     if isequal(dlg_choice3,'Yes')
                         dlg_choice = 'Yes';
-                    else 
-                        dlg_choice3 = [];
+                    else
+                        dlg_choice3 = 'No';
+                    end
+                elseif dlg_choice2 == ""
+                    prompt_quit = questdlg('Do you want to quit?','Quit','Yes','No','No');
+                    if isequal(prompt_quit,'Yes')
+                        close all;
+                        error('User quit');
+                    else
+                        dlg_choice3 = 'No';
                     end
                 else
-                   dlg_choice3 = [];
+                    dlg_choice3 = 'No';
                 end
 
                 rect = [1 1 size(this_img)];
+                
                 if isequal(dlg_choice,'Yes')
-
                     [~,rect] = imcrop(masked_data);
                     close all
                     rect = round(rect);
-
                 end
+                
                 img_counter = img_counter+1;
                 cropped_data = masked_data(rect(2):(rect(2)+rect(4)-1),rect(1):(rect(1)+rect(3)-1));
             else
