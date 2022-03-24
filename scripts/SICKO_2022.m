@@ -77,6 +77,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
     image_integral_intensities = zeros(1,length(img_paths));
     image_integral_areas = zeros(1,length(img_paths));
     dead = zeros(1,length(img_paths));
+    fled = zeros(1,length(img_paths));
     censored = zeros(1,length(img_paths));
 
     img_counter = 1;
@@ -94,6 +95,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
                     dead(i:i+2) = 1;
                 elseif fled_data(worm_num,well_num)~=0
                     flag = 2;
+                    fled(i:i+2) = 1;
                 else 
                     flag = 0;
                 end
@@ -259,6 +261,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
         writematrix(image_integral_intensities,fullfile(img_dir_path,'image_integral_intensities.csv'));
         writematrix(image_integral_areas,fullfile(img_dir_path,'image_integral_areas.csv'));
         writematrix(dead,fullfile(img_dir_path,'dead.csv'));
+        writematrix(fled,fullfile(img_dir_path,'fled.csv'));
         writematrix(censored,fullfile(img_dir_path,'censored.csv'));
     else
         disp('No images were detected, please select the correct folder')
