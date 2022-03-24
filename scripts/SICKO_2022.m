@@ -1,6 +1,8 @@
 clear all 
 close all 
 
+%Y:\Users\Luis Espejo\SICKO\Experiments\Dual Validation\Repeat 1
+
 % number of images in the replicate
 number_imgs_in_replicate = 3;
 
@@ -9,7 +11,7 @@ number_imgs_in_replicate = 3;
 
 
 % 750 for GFP
-img_thresh = 1200;
+img_thresh = 3200;
 
 % if you know 110% sure that there is ZERO contamination
 % usually for testing only
@@ -76,8 +78,8 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
     
     for i = 1:length(img_paths)
     
-        well_num = well_number(img_paths(i).name(2));
-        worm_num = str2double(img_paths(i).name(1));
+        well_num = well_number(regexpi(img_paths(i).name,'[a-z]+','match','once'));
+        worm_num = str2double(regexpi(img_paths(i).name,'\d*','match','once'));
        
         if (dead_data(worm_num,well_num)~=0 || fled_data(worm_num,well_num)~=0)
             if day >= (dead_data(worm_num,well_num) || fled_data(worm_num,well_num))
@@ -127,7 +129,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
 
 
                     subplot(1,2,2)
-                    imshow(this_img,[])
+                    imshow(this_img,[0, img_thresh])
                 end
 
         %         imshowpair(masked_data,this_img,'montage')
