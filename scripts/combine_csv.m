@@ -107,7 +107,7 @@ for n = 1:length(ovr_dir)
     clear filepath CSVidx message
     
     k=1;
-    for i = 5:5:length(csv_cells)
+    for i = 6:6:length(csv_cells)
         wells_and_replicates{k} = csv_cells{i};
         wells_and_replicates{k} = erase(wells_and_replicates{k},'.tif');
         
@@ -143,7 +143,7 @@ for n = 1:length(ovr_dir)
     
     
     % csv_header = ["Full Path","Group","Well","Session","Picture Replicate","Area","Intensity"];
-    csv_header = ["Full Path","Biological Replicate","Strain (group)","Session","Day","ID (well location)","Picture Replicate","Intensity","Area","Censored","Dead"];
+    csv_header = ["Full Path","Biological Replicate","Strain (group)","Session","Day","ID (well location)","Picture Replicate","Intensity","Area","Censored","Dead","Fled"];
     
     k=1;
     for i = 1:length(path_names)
@@ -159,6 +159,7 @@ for n = 1:length(ovr_dir)
             final_csv(r,9) = {areas{i}{j}};
             final_csv(r,10) = {censors{i}{j}};
             final_csv(r,11) = {dead{i}{j}};
+            final_csv(r,12) = {dead{i}{j}};       
             r=r+1;
         end
         
