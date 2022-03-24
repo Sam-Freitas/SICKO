@@ -48,12 +48,18 @@ ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
 %(wells,worms,path)
 [dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,length(ovr_dir));
 
-for count = 1:length(ovr_dir)
+for img_count = 1:length(ovr_dir)
     
     img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
     
     img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); %gets img paths per day
     
+end
+
+for count = 1:length(ovr_dir)
+    
+    img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
+     
     img_process(img_paths, img_dir_path, img_thresh, zero_contamination, use_border_subtraction,dead_data,fled_data);
 
 end

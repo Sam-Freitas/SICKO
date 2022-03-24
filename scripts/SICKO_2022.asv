@@ -48,12 +48,16 @@ ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
 %(wells,worms,path)
 [dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,length(ovr_dir));
 
-for count = 1:length(ovr_dir)
-    
-    img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
+for img_count = 1:length(ovr_dir)
     
     img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); %gets img paths per day
     
+end
+
+for count = 1:length(ovr_dir)
+    
+    img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
+     
     img_process(img_paths, img_dir_path, img_thresh, zero_contamination, use_border_subtraction,dead_data,fled_data);
 
 end
@@ -76,10 +80,10 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
     img_counter = 1;
     day = img_dir_path(end);
     
-    for i = 210:length(img_paths)
+    for i = 1:length(img_paths)
     
         well_num = well_number(regexpi(img_paths(i).name,'[a-z]+','match','once'));
-        worm_num = str2double(regexp(img_paths(i).name,'\d*','match','once'))
+        worm_num = str2double(regexpi(img_paths(i).name,'\d*','match','once'));
        
         if (dead_data(worm_num,well_num)~=0 || fled_data(worm_num,well_num)~=0)
             if day >= (dead_data(worm_num,well_num) || fled_data(worm_num,well_num))
