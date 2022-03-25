@@ -28,7 +28,7 @@ for n = 1:length(ovr_dir)
     inner_dir = dir(fullfile(ovr_dir(n).folder,ovr_dir(n).name));
     dirFlags = [inner_dir.isdir];
     inner_dir = inner_dir(dirFlags);
-    inner_dir(ismember( {inner_dir.name}, {'.', '..'})) = [];  %remove . and ..
+    inner_dir(ismember( {inner_dir.name}, {'.', '..','Settings'})) = [];  %remove . and ..
     
     group_names = strings(length(inner_dir),1);
     inner_session_names = strings(length(inner_dir),1);
@@ -90,6 +90,21 @@ for n = 1:length(ovr_dir)
     CSVidx = ismember(allExts,'csv');    % Search ext for "CSV" at the end
     CSV_filepaths = {message(CSVidx).Name};  % Use CSVidx to list all paths.
     
+    [~,CSV_names,~] = fileparts(CSV_filepaths); %not including GUI files in final CSV
+    CSV_flag = ones(1,length(CSV_names));
+    
+    for c = 1:length(CSV_names)
+        
+        if isequal(CSV_names{c},'GUI_dead_data')
+            CSV_flag(c) = 0;
+        elseif isequal(CSV_names{c},'GUI_fled_data')
+            CSV_flag(c) = 0;
+        end
+        
+    end
+    
+    CSV_names = CSV_names(CSV_flag);
+    
     fprintf('There are %i files with *.CSV exts.\n',numel(CSV_filepaths));
     
     csv_cells = cell(1,length(CSV_filepaths));
@@ -99,7 +114,7 @@ for n = 1:length(ovr_dir)
     end
     
     k=1;
-    for i = 1:5:length(csv_cells)
+    for i = 1:6:length(csv_cells)
         [filepath,~,~] = fileparts(CSV_filepaths{i});
         [~,path_names{k},~] = fileparts(filepath);
         k=k+1;
@@ -133,9 +148,10 @@ for n = 1:length(ovr_dir)
     end
     
     k=1;
-    for i = 1:5:length(csv_cells)
+    for i = 1:6:length(csv_cells)
         censors{k} = csv_cells{i};
         dead{k} = csv_cells{i+1};
+        fled{k} = csv_cells{i+1};
         areas{k} = csv_cells{i+2};
         int_inten{k} = csv_cells{i+3};
         k=k+1;
@@ -159,7 +175,7 @@ for n = 1:length(ovr_dir)
             final_csv(r,9) = {areas{i}{j}};
             final_csv(r,10) = {censors{i}{j}};
             final_csv(r,11) = {dead{i}{j}};
-            final_csv(r,12) = {dead{i}{j}};       
+            final_csv(r,12) = {fled{i}{j}};       
             r=r+1;
         end
         
