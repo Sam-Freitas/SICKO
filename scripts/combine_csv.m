@@ -103,12 +103,12 @@ for n = 1:length(ovr_dir)
         
     end
     
-    CSV_names = CSV_names(CSV_flag);
+    CSV_filepaths = CSV_filepaths(CSV_flag == 1);
     
     fprintf('There are %i files with *.CSV exts.\n',numel(CSV_filepaths));
     
     csv_cells = cell(1,length(CSV_filepaths));
-    % censored,dead,areas,intensities,names
+    % censored,dead,fled,areas,intensities,names
     for i = 1:numel(CSV_filepaths)
         csv_cells{i}= readcell(CSV_filepaths{i}); % Your parsing will be different
     end
@@ -151,9 +151,9 @@ for n = 1:length(ovr_dir)
     for i = 1:6:length(csv_cells)
         censors{k} = csv_cells{i};
         dead{k} = csv_cells{i+1};
-        fled{k} = csv_cells{i+1};
-        areas{k} = csv_cells{i+2};
-        int_inten{k} = csv_cells{i+3};
+        fled{k} = csv_cells{i+2};
+        areas{k} = csv_cells{i+3};
+        int_inten{k} = csv_cells{i+4};
         k=k+1;
     end
     

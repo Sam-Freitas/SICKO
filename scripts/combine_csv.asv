@@ -91,23 +91,24 @@ for n = 1:length(ovr_dir)
     CSV_filepaths = {message(CSVidx).Name};  % Use CSVidx to list all paths.
     
     [~,CSV_names,~] = fileparts(CSV_filepaths); %not including GUI files in final CSV
-    CSV_flag = zeros(1,length(CSV_names));
+    CSV_flag = ones(1,length(CSV_names));
     
-    for c = length(CSV_names)
+    for c = 1:length(CSV_names)
         
-        CSV_flag(c) = isequal(char(CSV_names(c)),'GUI_dead_data');
-        CSV_flag(c) = isequal(char(CSV_names(c)),'GUI_fled_data');
+        if isequal(CSV_names{c},'GUI_dead_data')
+            CSV_flag(c) = 0;
+        elseif isequal(CSV_names{c},'GUI_fled_data')
+            CSV_flag(c) = 0;
+        end
         
     end
-%         dirFlags = [temp_dir_step.isdir];
-%         temp_dir_step = temp_dir_step(dirFlags);
-%         temp_dir_step(ismember( {temp_dir_step.name}, {'.', '..'})) = [];  %remove . and ..
-    CSV_names(ismember({CSV_names},{'GUI_dead_data','GUI_fled_data'})) = [];
-
+    
+    CSV_filepaths = CSV_filepaths(CSV_flag == 1);
+    
     fprintf('There are %i files with *.CSV exts.\n',numel(CSV_filepaths));
     
     csv_cells = cell(1,length(CSV_filepaths));
-    % censored,dead,areas,intensities,names
+    % censored,dead,fled,areas,intensities,names
     for i = 1:numel(CSV_filepaths)
         csv_cells{i}= readcell(CSV_filepaths{i}); % Your parsing will be different
     end
