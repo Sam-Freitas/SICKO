@@ -9,7 +9,6 @@ number_imgs_in_replicate = 3;
 % image threshold
 % 130 for RFP
 
-
 % 750 for GFP
 img_thresh = 3200;
 
@@ -48,9 +47,9 @@ ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
 %(wells,worms,path)
 [dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,length(ovr_dir));
 
-for img_count = 1:length(ovr_dir)
+for img_count = 1:length(ovr_dir)    %double checks if imgs are in replicate
     
-    img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
+    img_dir_path = fullfile(exp_dir_path, ovr_dir(img_count).name);
     
     img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); %gets img paths per day
     
@@ -211,8 +210,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
                 if img_counter > 3
                     img_counter=1;
                 end
-            end
-
+            end   
             if flag ~= 0
                 img_counter = img_counter+1;
             end
