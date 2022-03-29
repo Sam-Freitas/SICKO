@@ -28,7 +28,7 @@ for n = 1:length(ovr_dir)
     inner_dir = dir(fullfile(ovr_dir(n).folder,ovr_dir(n).name));
     dirFlags = [inner_dir.isdir];
     inner_dir = inner_dir(dirFlags);
-    inner_dir(ismember( {inner_dir.name}, {'.', '..'})) = [];  %remove . and ..
+    inner_dir(ismember( {inner_dir.name}, {'.', '..','Settings'})) = [];  %remove . and ..
     
     group_names = strings(length(inner_dir),1);
     inner_session_names = strings(length(inner_dir),1);
@@ -90,16 +90,31 @@ for n = 1:length(ovr_dir)
     CSVidx = ismember(allExts,'csv');    % Search ext for "CSV" at the end
     CSV_filepaths = {message(CSVidx).Name};  % Use CSVidx to list all paths.
     
+    [~,CSV_names,~] = fileparts(CSV_filepaths); %not including GUI files in final CSV
+    CSV_flag = ones(1,length(CSV_names));
+    
+    for c = 1:length(CSV_names)
+        
+        if isequal(CSV_names{c},'GUI_dead_data')
+            CSV_flag(c) = 0;
+        elseif isequal(CSV_names{c},'GUI_fled_data')
+            CSV_flag(c) = 0;
+        end
+        
+    end
+    
+    CSV_filepaths = CSV_filepaths(CSV_flag == 1);
+    
     fprintf('There are %i files with *.CSV exts.\n',numel(CSV_filepaths));
     
     csv_cells = cell(1,length(CSV_filepaths));
-    % censored,dead,areas,intensities,names
+    % censored,dead,fled,areas,intensities,names
     for i = 1:numel(CSV_filepaths)
         csv_cells{i}= readcell(CSV_filepaths{i}); % Your parsing will be different
     end
     
     k=1;
-    for i = 1:5:length(csv_cells)
+    for i = 1:6:length(csv_cells)
         [filepath,~,~] = fileparts(CSV_filepaths{i});
         [~,path_names{k},~] = fileparts(filepath);
         k=k+1;
@@ -107,7 +122,7 @@ for n = 1:length(ovr_dir)
     clear filepath CSVidx message
     
     k=1;
-    for i = 5:5:length(csv_cells)
+    for i = 6:6:length(csv_cells)
         wells_and_replicates{k} = csv_cells{i};
         wells_and_replicates{k} = erase(wells_and_replicates{k},'.tif');
         
@@ -133,17 +148,18 @@ for n = 1:length(ovr_dir)
     end
     
     k=1;
-    for i = 1:5:length(csv_cells)
+    for i = 1:6:length(csv_cells)
         censors{k} = csv_cells{i};
         dead{k} = csv_cells{i+1};
-        areas{k} = csv_cells{i+2};
-        int_inten{k} = csv_cells{i+3};
+        fled{k} = csv_cells{i+2};
+        areas{k} = csv_cells{i+3};
+        int_inten{k} = csv_cells{i+4};
         k=k+1;
     end
     
     
     % csv_header = ["Full Path","Group","Well","Session","Picture Replicate","Area","Intensity"];
-    csv_header = ["Full Path","Biological Replicate","Strain (group)","Session","Day","ID (well location)","Picture Replicate","Intensity","Area","Censored","Dead"];
+    csv_header = ["Full Path","Biological Replicate","Strain (group)","Session","Day","ID (well location)","Picture Replicate","Intensity","Area","Censored","Dead","Fled"];
     
     k=1;
     for i = 1:length(path_names)
@@ -159,6 +175,7 @@ for n = 1:length(ovr_dir)
             final_csv(r,9) = {areas{i}{j}};
             final_csv(r,10) = {censors{i}{j}};
             final_csv(r,11) = {dead{i}{j}};
+            final_csv(r,12) = {fled{i}{j}};       
             r=r+1;
         end
         

@@ -1,15 +1,16 @@
 clear all 
 close all 
 
+%Y:\Users\Luis Espejo\SICKO\Experiments\Dual Validation\Repeat 1
+
 % number of images in the replicate
 number_imgs_in_replicate = 3;
 
 % image threshold
 % 130 for RFP
 
-
 % 750 for GFP
-img_thresh = 1200;
+img_thresh = 3200;
 
 % if you know 110% sure that there is ZERO contamination
 % usually for testing only
@@ -46,12 +47,18 @@ ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
 %(wells,worms,path)
 [dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,length(ovr_dir));
 
-for count = 1:length(ovr_dir)
+for img_count = 1:length(ovr_dir)    %double checks if imgs are in replicate
     
-    img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
+    img_dir_path = fullfile(exp_dir_path, ovr_dir(img_count).name);
     
     img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); %gets img paths per day
     
+end
+
+for count = 1:length(ovr_dir)
+    
+    img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
+     
     img_process(img_paths, img_dir_path, img_thresh, zero_contamination, use_border_subtraction,dead_data,fled_data);
 
 end
@@ -69,6 +76,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
     image_integral_intensities = zeros(1,length(img_paths));
     image_integral_areas = zeros(1,length(img_paths));
     dead = zeros(1,length(img_paths));
+    fled = zeros(1,length(img_paths));
     censored = zeros(1,length(img_paths));
 
     img_counter = 1;
@@ -76,8 +84,8 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
     
     for i = 1:length(img_paths)
     
-        well_num = well_number(img_paths(i).name(2));
-        worm_num = str2double(img_paths(i).name(1));
+        well_num = well_number(regexpi(img_paths(i).name,'[a-z]+','match','once'));
+        worm_num = str2double(regexpi(img_paths(i).name,'\d*','match','once'));
        
         if (dead_data(worm_num,well_num)~=0 || fled_data(worm_num,well_num)~=0)
             if day >= (dead_data(worm_num,well_num) || fled_data(worm_num,well_num))
@@ -86,6 +94,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
                     dead(i:i+2) = 1;
                 elseif fled_data(worm_num,well_num)~=0
                     flag = 2;
+                    fled(i:i+2) = 1;
                 else 
                     flag = 0;
                 end
@@ -127,7 +136,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
 
 
                     subplot(1,2,2)
-                    imshow(this_img,[])
+                    imshow(this_img,[0, img_thresh])
                 end
 
         %         imshowpair(masked_data,this_img,'montage')
@@ -201,8 +210,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
                 if img_counter > 3
                     img_counter=1;
                 end
-            end
-
+            end   
             if flag ~= 0
                 img_counter = img_counter+1;
             end
@@ -251,6 +259,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
         writematrix(image_integral_intensities,fullfile(img_dir_path,'image_integral_intensities.csv'));
         writematrix(image_integral_areas,fullfile(img_dir_path,'image_integral_areas.csv'));
         writematrix(dead,fullfile(img_dir_path,'dead.csv'));
+        writematrix(fled,fullfile(img_dir_path,'fled.csv'));
         writematrix(censored,fullfile(img_dir_path,'censored.csv'));
     else
         disp('No images were detected, please select the correct folder')
