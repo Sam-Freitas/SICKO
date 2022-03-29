@@ -28,7 +28,7 @@ for n = 1:length(ovr_dir)
     inner_dir = dir(fullfile(ovr_dir(n).folder,ovr_dir(n).name));
     dirFlags = [inner_dir.isdir];
     inner_dir = inner_dir(dirFlags);
-    inner_dir(ismember( {inner_dir.name}, {'.', '..','Settings'})) = [];  %remove . and ..
+    inner_dir(ismember( {inner_dir.name}, {'.', '..','Settings', 'settings'})) = [];  %remove . and ..
     
     group_names = strings(length(inner_dir),1);
     inner_session_names = strings(length(inner_dir),1);
