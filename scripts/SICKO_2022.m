@@ -45,7 +45,6 @@ ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
 %using GUI prompts user to select dead/fled worms across experiment 
 %gets dead and fled data
 %(wells,worms,path)
-[dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,length(ovr_dir));
 
 for img_count = 1:length(ovr_dir)    %double checks if imgs are in replicate
     
@@ -55,9 +54,13 @@ for img_count = 1:length(ovr_dir)    %double checks if imgs are in replicate
     
 end
 
+[dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,length(ovr_dir));
+
 for count = 1:length(ovr_dir)
     
     img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
+    
+    img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); %gets img paths per day
      
     img_process(img_paths, img_dir_path, img_thresh, zero_contamination, use_border_subtraction,dead_data,fled_data);
 
@@ -80,47 +83,51 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
     censored = zeros(1,length(img_paths));
 
     img_counter = 1;
-    day = img_dir_path(end);
+    day = str2num(img_dir_path(end));
     
     for i = 1:length(img_paths)
-    
+        
         well_num = well_number(regexpi(img_paths(i).name,'[a-z]+','match','once'));
         worm_num = str2double(regexpi(img_paths(i).name,'\d*','match','once'));
-       
-        if (dead_data(worm_num,well_num)~=0 || fled_data(worm_num,well_num)~=0)
-            if day >= (dead_data(worm_num,well_num) || fled_data(worm_num,well_num))
-                if dead_data(worm_num,well_num)~=0
-                    flag = 1;
-                    dead(i:i+2) = 1;
-                elseif fled_data(worm_num,well_num)~=0
-                    flag = 2;
-                    fled(i:i+2) = 1;
-                else 
-                    flag = 0;
-                end
+        
+        
+        if dead_data(worm_num,well_num)~=0
+            if day >= (dead_data(worm_num,well_num))
+                flag = 1;
+                dead(i) = 1;
+            else
+                flag = 0;
+            end
+        elseif fled_data(worm_num,well_num)~=0
+            if day >= fled_data(worm_num,well_num)
+                flag = 2;
+                fled(i) = 1;
+            else
+                flag = 0;
             end
         end
         
         this_img_path = fullfile(img_dir_path,img_paths(i).name);
         
         this_img = imread(this_img_path);
-
+        
         data = this_img;
-
+        
         mask = imclose(bwareaopen(data>img_thresh,10,4),se);
-
-    %     T = mean2(this_img)+3*std2(this_img);
-    %     mask2 = bwareaopen(bwareaopen(data>T,10,4)-bwperim(imfill(mask,'holes')),10,4);
-    %     mask2 = imgaussfilt(double(mask2),1.2)>0;
-
-        masked_data = mask.*double(data); % this converts the picture array to mathable stuff 
+        
+        %     T = mean2(this_img)+3*std2(this_img);
+        %     mask2 = bwareaopen(bwareaopen(data>T,10,4)-bwperim(imfill(mask,'holes')),10,4);
+        %     mask2 = imgaussfilt(double(mask2),1.2)>0;
+        
+        masked_data = mask.*double(data); % this converts the picture array to mathable stuff
         prompt_quit = 'No';
         
-            if img_counter < 2 && flag == 0
-
+        if flag == 0
+            if img_counter < 2
+                
                 if ~zero_contamination
                     figure('units','normalized','outerposition',[0 0 1 1])
-
+                    
                     subplot(1,2,1)
                     Ifill = imfill(imgaussfilt(masked_data,10)>0,'holes');
                     B = bwboundaries(Ifill);
@@ -133,20 +140,20 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
                         plot(b(:,2),b(:,1),'g','linewidth',2);
                         %             text(c(1),c(2),num2str(k),'backgroundcolor','g');
                     end
-
-
+                    
+                    
                     subplot(1,2,2)
                     imshow(this_img,[0, img_thresh])
                 end
-
-        %         imshowpair(masked_data,this_img,'montage')
+                
+                %         imshowpair(masked_data,this_img,'montage')
                 title(string([img_paths(i).name ' --- ' 'img:' num2str(i)]))
                 drawnow;
-
+                
                 if ~zero_contamination
                     dlg_choice = questdlg({'Does this image have any contamination in it?',...
                         'If so draw rectange around the worm and double click it'},'Redo?','Yes','No', 'Dead or Censored','No');
-                else 
+                else
                     dlg_choice = 'No';
                 end
                 
@@ -192,7 +199,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
                 else
                     dlg_choice3 = 'No';
                 end
-
+                
                 rect = [1 1 size(this_img)];
                 
                 if isequal(dlg_choice,'Yes')
@@ -206,11 +213,12 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
             else
                 cropped_data = masked_data(rect(2):(rect(2)+rect(4)-1),rect(1):(rect(1)+rect(3)-1));
                 img_counter = img_counter+1;
-
+                
                 if img_counter > 3
                     img_counter=1;
                 end
-            end   
+            end
+            
             if flag ~= 0
                 img_counter = img_counter+1;
             end
@@ -218,17 +226,17 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
             if img_counter > 3
                 img_counter=1;
             end
-           
+            
             if ~zero_contamination
                 close all
             end
-
-            if use_border_subtraction 
+            
+            if use_border_subtraction
                 % get the cropped data of the raw values
                 cropped_data_raw = double(data(rect(2):(rect(2)+rect(4)-1),rect(1):(rect(1)+rect(3)-1)));
                 cropped_data_mask = cropped_data>0;
                 % use the inital mask and thicken it 25x then subtract the inital
-                % mask off and create a mask from that, should be only thick borders 
+                % mask off and create a mask from that, should be only thick borders
                 border_mask = (bwmorph(cropped_data_mask,'thicken',25)-cropped_data_mask)>0;
                 % get all the pixels from the border mask (vector)
                 border_pixels = nonzeros(border_mask.*cropped_data_raw);
@@ -240,15 +248,16 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
                 % integrate across the masks
                 image_integral_intensities(i) = sum(cropped_data_norm(:));
                 image_integral_areas(i) = sum(cropped_data_norm(:)>0);
-
+                
             else
                 image_integral_intensities(i) = sum(cropped_data(:));
                 image_integral_areas(i) = sum(cropped_data(:)>0);
             end
-
+        end
+        
         %     linear_data = nonzeros(masked_data);
-        %         
-        %     [counts,binLoc] = hist(linear_data,255); 
+        %
+        %     [counts,binLoc] = hist(linear_data,255);
         %     stem(binLoc,counts)
         flag = 0;
     end
