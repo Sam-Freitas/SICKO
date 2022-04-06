@@ -21,16 +21,20 @@ col_intensity = contains(string(csv_names),"Intensity");
 col_area = contains(string(csv_names),"Area");
 col_censor = contains(string(csv_names),"Censored");
 col_dead = contains(string(csv_names),"Dead");
+col_fled = contains(string(csv_names),"Fled");
 
 % isolate datasets
 data_intensity = table2array(csv_table(:,col_intensity));
 data_area = table2array(csv_table(:,col_area));
 data_censor = table2array(csv_table(:,col_censor));
 data_dead = table2array(csv_table(:,col_dead));
+data_fled = table2array(csv_table(:,col_fled));
+
 
 % initalize datasets
 data_sess_died = zeros(length(data_dead),1);
 data_sess_censored = zeros(length(data_dead),1);
+data_sess_fled = zeros(length(data_dead),1);
 
 % get all the days that a worm died on
 % effective lifespan
@@ -47,6 +51,11 @@ for i = 1:length(data_dead)
     sess_censored = find(data_censor(i,:)>0,1,'first');
     if ~isempty(sess_censored)
         data_sess_censored(i) = sess_censored;
+    end
+   
+    sess_fled = find(data_fled(i,:)>0,1,'first');
+    if ~isempty(sess_fled)
+        data_sess_fled(i) = sess_fled;
     end
     
 end

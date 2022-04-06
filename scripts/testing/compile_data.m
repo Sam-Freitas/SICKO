@@ -128,7 +128,12 @@ for i = 1:length(unique_final_idx_no_day_session)
         this_isolated_censor{j} = data_means(sub_idx,3);
         this_isolated_dead{j} = data_means(sub_idx,4);
         this_isolated_fled{j} = data_means(sub_idx,5);
+        
+        if ~this_isolated_censor{j} && this_isolated_fled{j}
+            this_isolated_censor{j} = 1;
+        end
     end
+    
     isolated_intensity{i} = cell2mat(this_isolated_inten)';
     isolated_area{i} = cell2mat(this_isolated_area)';
     isolated_censor{i} = cell2mat(this_isolated_censor)';
