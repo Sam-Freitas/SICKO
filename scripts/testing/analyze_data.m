@@ -62,7 +62,7 @@ idx_not_dead = (data_sess_died==0);
 % worms that only have a single data point that didnt die
 idx_only_single_point = (sum(data_area>0,2)==1).*(~(data_sess_died>0));
 
-idx_yes = logical(idx_infected.*(~idx_only_single_point));
+idx_yes = logical(idx_infected.*(idx_only_single_point));
 
 % start with keep everything
 idx_2d_data_to_keep = ones(size(data_dead));
@@ -113,7 +113,7 @@ if ~mean_plot
         title([conditions(i) '_' title_ext],'interpreter','none');
         hold on
         
-        this_condition_idx = string(csv_table.Condition) == conditions(i);
+        this_condition_idx = (string(csv_table.Condition) == conditions(i));
         
         this_condition_idx = logical(idx_yes.*this_condition_idx);
         

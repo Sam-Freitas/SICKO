@@ -65,7 +65,7 @@ end
 % find all the uniqe identifiers 
 unique_rows_idx = unique(identifiers_idx,'rows');
 % initalize the averaged data 
-data_means = zeros(length(unique_rows_idx),5);
+data_means = zeros(length(unique_rows_idx),4);
 % createa a index list 
 idx = (1:length(identifiers))';
 
