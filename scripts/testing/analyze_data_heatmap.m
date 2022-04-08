@@ -20,7 +20,7 @@ csv_output_header = ["Biological Replicate","Condition","ID (well location)",...
 csv_table= readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve'); % Your parsing will be different
 
 % get conditions
-conditions = string(natsort(unique((csv_table.Condition))));
+ conditions = string(natsort(unique((csv_table.Condition))));
 condition_idx = 1:length(conditions);
 
 % get names of the csv
