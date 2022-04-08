@@ -109,22 +109,25 @@ data_to_csv(csv_output_header,csv_table,...
 display_data(non_cen_data_area,logical(idx_infected.*(~idx_only_single_point)),...
     conditions,csv_table,data_censor,'Integrated_Area')
 
-heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name)
-heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name)
+% heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name)
+% heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name)
+% 
+% plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+%     'auto','Integrated_Area',0,exp_name,CSV_filepath,0)
+% plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+%     'max','Integrated_Area',0,exp_name,CSV_filepath,0)
+% plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+%     'max','Integrated_Area',1,exp_name,CSV_filepath,0)
+% 
+% plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+%     'auto','Integrated_Intensity',0,exp_name,CSV_filepath,0)
+% plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+%     'max','Integrated_Intensity',0,exp_name,CSV_filepath,0)
+close all
+plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+    'max','Integrated_Intensity',1,exp_name,CSV_filepath,1)
 
-plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    'auto','Integrated_Area',0,exp_name,CSV_filepath)
-plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    'max','Integrated_Area',0,exp_name,CSV_filepath)
-plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    'max','Integrated_Area',1,exp_name,CSV_filepath)
-
-plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'auto','Integrated_Intensity',0,exp_name,CSV_filepath)
-plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'max','Integrated_Intensity',0,exp_name,CSV_filepath)
-plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'max','Integrated_Intensity',1,exp_name,CSV_filepath)
+disp('eof');
 
 
 
@@ -395,7 +398,7 @@ end
 
 
 
-function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_name,CSV_filepath)
+function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_name,CSV_filepath,SICKO_coef)
 
 g = figure('units','normalized','outerposition',[0 0 1 1]);
 title(exp_name,'Interpreter','None');
@@ -467,14 +470,45 @@ else
         this_condition_idx = string(csv_table.Condition) == conditions(i);
         
         this_condition_idx = logical(idx_yes.*this_condition_idx);
-        
+        % find the relative condition 
         this_conditon = this_data(this_condition_idx,:);
+        
+        if SICKO_coef
+            num_died_not_infected_observed = sum(sum(this_conditon,2,'omitnan')<0);
+            num_died_infected_observed = sum(sum(this_conditon,2,'omitnan')>0);
+            total_died_during_observation = sum([num_died_not_infected_observed,num_died_infected_observed]);
+            % assuming cond gls130,ku25,n2
+            inital_count = [150,100,150];
+            died_during_passing = [9,50,15];
+            
+            did_not_die_normally = ~(sum(this_conditon,2,'omitnan')<0);
+            data_died_infected = this_conditon(did_not_die_normally,:);
+            died_over_time_from_infection = sum(data_died_infected==-1);
+            
+            remaining_after_passing = (inital_count - died_during_passing);
+            
+            percent_died_to_infection = num_died_infected_observed/total_died_during_observation;
+            died_during_passing_to_infection = died_during_passing(i)*percent_died_to_infection;
+            
+            non_healthy_of_population = (num_died_infected_observed/96)*remaining_after_passing(i) + died_during_passing_to_infection;
+            non_healthy_of_population_fraction = non_healthy_of_population/inital_count(i);
+            
+            total_died_at_time_points = sum(this_conditon==-1,1,'omitnan');
+            
+            healthy_factor = 1/sqrt(1-non_healthy_of_population_fraction);
+            
+            unhealthy_factor = non_healthy_of_population./ ...
+                (abs((non_healthy_of_population - (died_during_passing_to_infection + died_over_time_from_infection))));
+            
+            SICKO_coef_time = healthy_factor*unhealthy_factor;
+            
+        end
         
         if isequal(ylim_mode,'max')
             ylim([0,overall_max])
         elseif isequal(ylim_mode,'auto')
             ylim([0,max(this_conditon(:))])
-        end
+        end 
         
         for j = 1:size(this_conditon,1) + 1
             
@@ -492,6 +526,15 @@ else
                 end
                 
                 this_worm = mean(this_conditon2,1,'omitnan');
+                
+                if SICKO_coef
+                    this_worm = this_worm.*SICKO_coef_time;
+                    worm_temp(j,:) = this_worm;
+                    
+                    if i == length(conditions)
+                        ylim([0,3*10^9])
+                    end
+                end
                 
                 plot(x,this_worm,'LineWidth',4)
                 
