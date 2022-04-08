@@ -8,7 +8,7 @@ csv_table= readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','p
 
 % convert identifiers to cell
 identifiers = table2cell(csv_table(:,[2:6]));
-data = table2array(csv_table(:,[8:11]));
+data = table2array(csv_table(:,[8:12]));
 full_paths = csv_table.("Full Path");
 repeats = csv_table.("Biological Replicate");
 try
@@ -65,7 +65,7 @@ end
 % find all the uniqe identifiers 
 unique_rows_idx = unique(identifiers_idx,'rows');
 % initalize the averaged data 
-data_means = zeros(length(unique_rows_idx),4);
+data_means = zeros(length(unique_rows_idx),5);
 % createa a index list 
 idx = (1:length(identifiers))';
 
@@ -100,6 +100,7 @@ isolated_intensity = cell(length(unique_final_idx_no_day_session),1);
 isolated_area = cell(length(unique_final_idx_no_day_session),1);
 isolated_censor = cell(length(unique_final_idx_no_day_session),1);
 isolated_dead = cell(length(unique_final_idx_no_day_session),1);
+isolated_fled = cell(length(unique_final_idx_no_day_session),1);
 
 for i = 1:length(unique_final_idx_no_day_session)
     
@@ -117,6 +118,8 @@ for i = 1:length(unique_final_idx_no_day_session)
     this_isolated_area = cell(length(this_idx),1);
     this_isolated_censor = cell(length(this_idx),1);
     this_isolated_dead = cell(length(this_idx),1);
+    this_isolated_fled = cell(length(this_idx),1);
+    
     for j = 1:length(this_idx)
         sub_idx = this_idx(j);
         
@@ -124,17 +127,23 @@ for i = 1:length(unique_final_idx_no_day_session)
         this_isolated_area{j} = data_means(sub_idx,2);
         this_isolated_censor{j} = data_means(sub_idx,3);
         this_isolated_dead{j} = data_means(sub_idx,4);
+        this_isolated_fled{j} = data_means(sub_idx,5);
         
+        if ~this_isolated_censor{j} && this_isolated_fled{j}
+            this_isolated_censor{j} = 1;
+        end
     end
+    
     isolated_intensity{i} = cell2mat(this_isolated_inten)';
     isolated_area{i} = cell2mat(this_isolated_area)';
     isolated_censor{i} = cell2mat(this_isolated_censor)';
     isolated_dead{i} = cell2mat(this_isolated_dead)';
+    isolated_fled{i} = cell2mat(this_isolated_fled)';
     
 end
-clear this_isolated_area this_isolated_inten this_isolated_censor this_isolated_dead
+clear this_isolated_area this_isolated_inten this_isolated_censor this_isolated_dead this_isolated_fled
 
-isolated_data = [isolated_intensity,isolated_area,isolated_censor,isolated_dead];
+isolated_data = [isolated_intensity,isolated_area,isolated_censor,isolated_dead,isolated_fled];
 
 rep_cond_loc_array = cell(size(unique_final_idx_no_day_session));
 
@@ -164,7 +173,7 @@ final_table = [T1,T2];
 
 header_names = cellstr(["Biological Replicate",...
     "Condition","ID (well location)",...
-    "Intensity","Area","Censored","Dead"]);
+    "Intensity","Area","Censored","Dead","Fled"]);
 
 final_table.Properties.VariableNames = header_names;
 

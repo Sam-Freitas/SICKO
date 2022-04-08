@@ -28,14 +28,14 @@ for n = 1:length(ovr_dir)
     inner_dir = dir(fullfile(ovr_dir(n).folder,ovr_dir(n).name));
     dirFlags = [inner_dir.isdir];
     inner_dir = inner_dir(dirFlags);
-    inner_dir(ismember( {inner_dir.name}, {'.', '..','Settings'})) = [];  %remove . and ..
+    inner_dir(ismember( {inner_dir.name}, {'.', '..','Settings', 'settings'})) = [];  %remove . and ..
     
-    group_names = strings(length(inner_dir),1);
+    condition = strings(length(inner_dir),1);
     inner_session_names = strings(length(inner_dir),1);
     disp('Found experiments:')
     for i = 1:length(inner_dir)
-        group_names(i) = inner_dir(i).name;
-        disp(group_names(i))
+        condition(i) = inner_dir(i).name;
+        disp(condition(i))
     end
     k=1;
     
@@ -67,14 +67,14 @@ for n = 1:length(ovr_dir)
     
     
     k=1;
-    for i = 1:length(group_names)
+    for i = 1:length(condition)
         for j = 1:num_sessions_per_exp(i)
-            group_names2(k) = group_names(i);
+            condition2(k) = condition(i);
             k=k+1;
         end
     end
-    group_names = group_names2;
-    clear group_names2
+    condition = condition2;
+    clear condition2
     
     % mainFolder = uigetdir();    % Selectyour Main folder
     if ispc
@@ -159,14 +159,14 @@ for n = 1:length(ovr_dir)
     
     
     % csv_header = ["Full Path","Group","Well","Session","Picture Replicate","Area","Intensity"];
-    csv_header = ["Full Path","Biological Replicate","Strain (group)","Session","Day","ID (well location)","Picture Replicate","Intensity","Area","Censored","Dead","Fled"];
+    csv_header = ["Full Path","Biological Replicate","Condition","Session","Day","ID (well location)","Picture Replicate","Intensity","Area","Censored","Dead","Fled"];
     
     k=1;
     for i = 1:length(path_names)
         for j = 1:length(wells{i})
             final_csv(r,1) = {path_names{i}};
             final_csv(r,2) = {biorep_names(n)};                  %biological replicate
-            final_csv(r,3) = {group_names(i)};
+            final_csv(r,3) = {condition(i)};
             final_csv(r,4) = {sessions{i}(j)};
             final_csv(r,5) = {days(i)};                  %days
             final_csv(r,6) = {wells{i}{j}};
