@@ -20,8 +20,36 @@ csv_output_header = ["Biological Replicate","Condition","ID (well location)",...
 csv_table= readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve'); % Your parsing will be different
 
 % get conditions
- conditions = string(natsort(unique((csv_table.Condition))));
+conditions = string(natsort(unique((csv_table.Condition))));
 condition_idx = 1:length(conditions);
+
+% get SICKO coefficient 
+answer = questdlg('Use the SICKO coefficient?', ...
+	'SICKO analysis option', ...
+	'Yes','No','Cancel','Cancel');
+% Handle response
+switch answer
+    case 'Yes'
+        SICKO_coef_option = 1;
+        num_worms_after_pass = inputdlg(cellstr(conditions)',...
+            'Number of worms Remaining after passing', [1 100; 1 100; 1 100]);
+        if isempty(num_worms_after_pass)
+            error('No data inputted')
+        end
+        
+        num_worms_died_dur_pass = inputdlg(cellstr(conditions)',...
+            'Number of worms died during passing', [1 100; 1 100; 1 100]);
+        if isempty(num_worms_died_dur_pass)
+            error('No data inputted')
+        end
+        
+    case 'No'
+        SICKO_coef_option = 0;
+        num_worms_died_dur_pass = [];
+        num_worms_after_pass = [];
+    case 'Cancel'
+        error('Canceled');
+end
 
 % get names of the csv
 csv_names = csv_table.Properties.VariableNames;
@@ -109,23 +137,24 @@ data_to_csv(csv_output_header,csv_table,...
 display_data(non_cen_data_area,logical(idx_infected.*(~idx_only_single_point)),...
     conditions,csv_table,data_censor,'Integrated_Area')
 
-% heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name)
-% heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name)
-% 
+heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name)
+heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name)
+
 % plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-%     'auto','Integrated_Area',0,exp_name,CSV_filepath,0)
+%     'auto','Integrated_Area',0,exp_name,CSV_filepath,0,[],[])
 % plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-%     'max','Integrated_Area',0,exp_name,CSV_filepath,0)
-% plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-%     'max','Integrated_Area',1,exp_name,CSV_filepath,0)
-% 
+%     'max','Integrated_Area',0,exp_name,CSV_filepath,0,[],[])
+plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+    'max','Integrated_Area_mean_cumsum',1,exp_name,CSV_filepath,SICKO_coef_option,...
+    num_worms_died_dur_pass,num_worms_after_pass)
+
 % plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-%     'auto','Integrated_Intensity',0,exp_name,CSV_filepath,0)
+%     'auto','Integrated_Intensity',0,exp_name,CSV_filepath,0,[],[])
 % plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-%     'max','Integrated_Intensity',0,exp_name,CSV_filepath,0)
-close all
+%     'max','Integrated_Intensity',0,exp_name,CSV_filepath,0,[],[])
 plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'max','Integrated_Intensity',1,exp_name,CSV_filepath,1)
+    'max','Integrated_Intensity_mean_cumsum',1,exp_name,CSV_filepath,SICKO_coef_option,...
+    num_worms_died_dur_pass,num_worms_after_pass)
 
 disp('eof');
 
@@ -137,9 +166,11 @@ overall_max = max(max(this_data(idx_yes,:)));
 
 g = figure('units','normalized','outerposition',[0 0 1 1]);
 
-x = 1:size(this_data,2);
+x = (1:length(conditions)).^2;
+x2 = 1:length(conditions);
+[~,sq_idx] = min(abs(length(conditions)-x));
 for i = 1:length(conditions)
-    subplot(2,3,i)
+    subplot(x2(sq_idx),x2(sq_idx),i)
     
     % find the index that represents this condition
     this_condition_idx = string(csv_table.Condition) == conditions(i);
@@ -398,7 +429,8 @@ end
 
 
 
-function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_name,CSV_filepath,SICKO_coef)
+function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_name,CSV_filepath,...
+    SICKO_coef,num_worms_died_dur_pass,num_worms_after_pass)
 
 g = figure('units','normalized','outerposition',[0 0 1 1]);
 title(exp_name,'Interpreter','None');
@@ -477,9 +509,13 @@ else
             num_died_not_infected_observed = sum(sum(this_conditon,2,'omitnan')<0);
             num_died_infected_observed = sum(sum(this_conditon,2,'omitnan')>0);
             total_died_during_observation = sum([num_died_not_infected_observed,num_died_infected_observed]);
-            % assuming cond gls130,ku25,n2
-            inital_count = [150,100,150];
-            died_during_passing = [9,50,15];
+            % assuming cond gls130,ku25,n2 for testing
+            inital_count = str2double(string(num_worms_after_pass));
+            died_during_passing = str2double(string(num_worms_died_dur_pass));
+%             inital_count = [150,150];
+%             died_during_passing = [9,15];
+            
+            worms_in_this_exp = size(this_conditon,1);
             
             did_not_die_normally = ~(sum(this_conditon,2,'omitnan')<0);
             data_died_infected = this_conditon(did_not_die_normally,:);
@@ -490,7 +526,7 @@ else
             percent_died_to_infection = num_died_infected_observed/total_died_during_observation;
             died_during_passing_to_infection = died_during_passing(i)*percent_died_to_infection;
             
-            non_healthy_of_population = (num_died_infected_observed/96)*remaining_after_passing(i) + died_during_passing_to_infection;
+            non_healthy_of_population = (num_died_infected_observed/worms_in_this_exp)*remaining_after_passing(i) + died_during_passing_to_infection;
             non_healthy_of_population_fraction = non_healthy_of_population/inital_count(i);
             
             total_died_at_time_points = sum(this_conditon==-1,1,'omitnan');
@@ -525,14 +561,14 @@ else
                     this_conditon2(k,:) = this_conditon_temp;
                 end
                 
-                this_worm = mean(this_conditon2,1,'omitnan');
+                this_worm = cumsum(mean(this_conditon2,1,'omitnan'));
                 
                 if SICKO_coef
                     this_worm = this_worm.*SICKO_coef_time;
                     worm_temp(j,:) = this_worm;
                     
                     if i == length(conditions)
-                        ylim([0,3*10^9])
+                        ylim([0,max(worm_temp(:))])
                     end
                 end
                 
