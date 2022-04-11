@@ -13,11 +13,11 @@ csv_output_header = ["Biological Replicate","Condition","ID (well location)",...
     "Area Regression Slope","Area Regresstion intercept",...
     "Area Integrated Across Time","Max Area Slope to a Point"];
 
-% get csv
+% get csv, if this is not working restart matlab idk anymore 
 [CSV_filename,CSV_filepath] = uigetfile('/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments/*.csv',...
     'Select the Compiled csv File');
 % read table
-csv_table= readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve'); % Your parsing will be different
+csv_table = readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve'); % Your parsing will be different
 
 % get conditions
 conditions = string(natsort(unique((csv_table.Condition))));
@@ -323,7 +323,7 @@ for i = 1:length(data_sess_died)
     % animal in the data
     this_data_inten = data_intensity(i,:);
     this_data_area = data_area(i,:);
-    this_data_censor = data_censor(i,:);
+    this_data_censor = data_dead(i,:);
     this_data_censor(isnan(this_data_censor)) = 1;
     x = 1:length(this_data_inten);
     
@@ -354,13 +354,20 @@ for i = 1:length(data_sess_died)
         first_sess_of_infection_area(i) = data_area(i,this_first_sess_idx);
         last_sess_of_infection_area(i) = data_area(i,this_last_sess_idx);
         
-        this_linear_regression_inten = polyfit(x,this_data_inten,1);
-        intensity_regression_slope(i) = this_linear_regression_inten(1);
-        intensity_regression_intercept(i) = this_linear_regression_inten(2);
-        
-        this_linear_regression_area = polyfit(x,this_data_area,1);
-        area_regression_slope(i) = this_linear_regression_area(1);
-        area_regression_intercept(i) = this_linear_regression_area(2);
+        % this doesnt really work and i dont think a linear regression is
+        % the best for modeling an infection so ill just leave this
+        % commented and if someone wants to fix it go ahead
+%         inten_data_temp = this_data_inten(isfinite(this_data_inten));
+%         x_temp = 1:length(inten_data_temp);
+%         this_linear_regression_inten = polyfit(x_temp,this_data_inten(isfinite(this_data_inten)),1);
+%         intensity_regression_slope(i) = this_linear_regression_inten(1);
+%         intensity_regression_intercept(i) = this_linear_regression_inten(2);
+%         
+%         area_data_temp = this_data_area(isfinite(this_data_area));
+%         x_temp = 1:length(area_data_temp);
+%         this_linear_regression_area = polyfit(x_temp,area_data_temp,1);
+%         area_regression_slope(i) = this_linear_regression_area(1);
+%         area_regression_intercept(i) = this_linear_regression_area(2);
         
         intensity_integrated_across_time(i) = sum(this_data_inten,'omitnan');
         area_integrated_across_time(i) = sum(this_data_area,'omitnan');
@@ -494,6 +501,8 @@ if ~mean_plot
     
 else
     
+    title([exp_name ' - cumulative sum of mean data'])
+    
     x = 1:size(this_data,2);
     for i = 1:length(conditions)
                 
@@ -565,6 +574,12 @@ else
                 
                 if SICKO_coef
                     this_worm = this_worm.*SICKO_coef_time;
+                    worm_temp(j,:) = this_worm;
+                    
+                    if i == length(conditions)
+                        ylim([0,max(worm_temp(:))])
+                    end
+                else
                     worm_temp(j,:) = this_worm;
                     
                     if i == length(conditions)
