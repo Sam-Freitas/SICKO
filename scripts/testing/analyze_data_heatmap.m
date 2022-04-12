@@ -132,7 +132,7 @@ non_cen_data_intensity(idx_2d_data_to_keep==-1) = -1;
 
 if SICKO_coef_option
     SICKO_coef_time = compute_SICKO_coef(non_cen_data_area,idx_yes,conditions,csv_table,...
-        num_worms_died_dur_pass,num_worms_after_pass);
+        num_worms_died_dur_pass,num_worms_after_pass,CSV_filepath,exp_name);
 else
     SICKO_coef_time = ones(1,size(data_area,2));
 end
@@ -173,7 +173,10 @@ disp('eof');
 
 
 function SICKO_coef_time = compute_SICKO_coef(this_data,...
-    idx_yes,conditions,csv_table,num_worms_died_dur_pass,num_worms_after_pass)
+    idx_yes,conditions,csv_table,num_worms_died_dur_pass,num_worms_after_pass,...
+    CSV_filepath,exp_name)
+
+header = ["Condition","survived_passing","died_in_passing","SICKO_coeff"];
 
 for i = 1:length(conditions)
     
@@ -217,6 +220,18 @@ for i = 1:length(conditions)
     
     SICKO_coef_time(i,:) = healthy_factor*unhealthy_factor;
 end
+
+SICKO_coef_time_cell = cell(length(conditions),1);
+for i = 1:length(conditions)
+    SICKO_coef_time_cell{i} = SICKO_coef_time(i,:);
+end
+
+to_csv_cells = [cellstr(conditions),num_worms_after_pass,...
+    num_worms_died_dur_pass,SICKO_coef_time_cell];
+
+T = cell2table(to_csv_cells,'VariableNames',header);
+
+writetable(T,fullfile(CSV_filepath,[exp_name '_SICKO.csv']))
     
 end
 
