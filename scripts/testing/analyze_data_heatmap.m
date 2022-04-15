@@ -575,7 +575,7 @@ if ~sum_plot
     
 else
     
-    title([exp_name '-' title_ext ' - cumulative sum of the daily integral of the data'])
+    title([exp_name '-' title_ext ' - cumulative sum of the daily integral of the data'],'Interpreter','None')
     
     x = 1:size(this_data,2);
     for i = 1:length(conditions)
@@ -618,11 +618,11 @@ else
             end
         end
         
-        plot(x,this_worm,'LineWidth',4)
-                
+        l(i) = plot(x,this_worm,'LineWidth',4,'DisplayName',char(conditions(i)));
+%         scatter(x,this_worm,SICKO_coef_time(i,:).*2,l(i).Color,'filled')
     end
     
-    legend(conditions,'location','north','orientation','horizontal','Interpreter','None')
+    legend(l,'location','north','orientation','horizontal','Interpreter','None')
     
     hold off
     
