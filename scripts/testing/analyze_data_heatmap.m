@@ -6,11 +6,9 @@ csv_output_header = ["Biological Replicate","Condition","ID (well location)",...
     "Is Dead","Is Last Day Censored","Last Day of Observation","First Day of nonzero data",...
     ...
     "Intensity at First Day of Infection","Intensity at Last Day of Observation",...
-    "Intensity Regression Slope","Intensity Regresstion intercept",...
     "Intensity Integrated Across Time","Max Intensity Slope to a Point"...
     ...
     "Area at First Day of Infection","Area at Last Day of Observation",...
-    "Area Regression Slope","Area Regresstion intercept",...
     "Area Integrated Across Time","Max Area Slope to a Point"];
 
 % get csv, if this is not working restart matlab idk anymore 
@@ -151,13 +149,13 @@ heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,...
 heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
     data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name,...
     SICKO_coef_option,SICKO_coef_time)
-
+close all
 % plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
 %     'auto','Integrated_Area',0,exp_name,CSV_filepath,0,[])
 % plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
 %     'max','Integrated_Area',0,exp_name,CSV_filepath,0,[])
 plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    'max','Integrated_Area_mean_cumsum',1,exp_name,CSV_filepath,SICKO_coef_option,...
+    'max','Integrated_Area',1,exp_name,CSV_filepath,SICKO_coef_option,...
     SICKO_coef_time)
 
 % plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
@@ -165,7 +163,7 @@ plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
 % plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
 %     'max','Integrated_Intensity',0,exp_name,CSV_filepath,0,[])
 plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'max','Integrated_Intensity_mean_cumsum',1,exp_name,CSV_filepath,SICKO_coef_option,...
+    'max','Integrated_Intensity',1,exp_name,CSV_filepath,SICKO_coef_option,...
     SICKO_coef_time)
 
 disp('eof');
@@ -451,21 +449,6 @@ for i = 1:length(data_sess_died)
         first_sess_of_infection_area(i) = data_area(i,this_first_sess_idx);
         last_sess_of_infection_area(i) = data_area(i,this_last_sess_idx);
         
-        % this doesnt really work and i dont think a linear regression is
-        % the best for modeling an infection so ill just leave this
-        % commented and if someone wants to fix it go ahead
-%         inten_data_temp = this_data_inten(isfinite(this_data_inten));
-%         x_temp = 1:length(inten_data_temp);
-%         this_linear_regression_inten = polyfit(x_temp,this_data_inten(isfinite(this_data_inten)),1);
-%         intensity_regression_slope(i) = this_linear_regression_inten(1);
-%         intensity_regression_intercept(i) = this_linear_regression_inten(2);
-%         
-%         area_data_temp = this_data_area(isfinite(this_data_area));
-%         x_temp = 1:length(area_data_temp);
-%         this_linear_regression_area = polyfit(x_temp,area_data_temp,1);
-%         area_regression_slope(i) = this_linear_regression_area(1);
-%         area_regression_intercept(i) = this_linear_regression_area(2);
-        
         intensity_integrated_across_time(i) = sum(this_data_inten,'omitnan');
         area_integrated_across_time(i) = sum(this_data_area,'omitnan');
         
@@ -485,8 +468,6 @@ for i = 1:length(data_sess_died)
     
 end
 
-
-
 final_array = cell(size(data_area,1),length(csv_output_header));
 
 for i = 1:size(data_area,1)
@@ -502,17 +483,13 @@ for i = 1:size(data_area,1)
     
     final_array{i,8}  = first_sess_of_infection_intensity(i);    
     final_array{i,9}  = last_sess_of_infection_intensity(i);  
-    final_array{i,10} = intensity_regression_slope(i);  
-    final_array{i,11} = intensity_regression_intercept(i); 
-    final_array{i,12} = intensity_integrated_across_time(i);  
-    final_array{i,13} = intensity_max_gradient_at_point(i); 
+    final_array{i,10} = intensity_integrated_across_time(i);  
+    final_array{i,11} = intensity_max_gradient_at_point(i); 
     
-    final_array{i,14} = first_sess_of_infection_area(i);    
-    final_array{i,15} = last_sess_of_infection_area(i);  
-    final_array{i,16} = area_regression_slope(i);  
-    final_array{i,17} = area_regression_intercept(i); 
-    final_array{i,18} = area_integrated_across_time(i);  
-    final_array{i,19} = area_max_gradient_at_point(i); 
+    final_array{i,12} = first_sess_of_infection_area(i);    
+    final_array{i,13} = last_sess_of_infection_area(i);  
+    final_array{i,14} = area_integrated_across_time(i);  
+    final_array{i,15} = area_max_gradient_at_point(i); 
     
 end
 
@@ -533,7 +510,7 @@ end
 
 
 
-function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,mean_plot,exp_name,CSV_filepath,...
+function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,sum_plot,exp_name,CSV_filepath,...
     SICKO_coef,SICKO_coef_time)
 
 g = figure('units','normalized','outerposition',[0 0 1 1]);
@@ -541,7 +518,7 @@ title(exp_name,'Interpreter','None');
 
 overall_max = max(max(this_data(idx_yes,:)));
 
-if ~mean_plot
+if ~sum_plot
     
     x = 1:size(this_data,2);
     for i = 1:length(conditions)
@@ -598,7 +575,7 @@ if ~mean_plot
     
 else
     
-    title([exp_name '_' title_ext ' - cumulative sum of mean data'])
+    title([exp_name '-' title_ext ' - cumulative sum of the daily integral of the data'])
     
     x = 1:size(this_data,2);
     for i = 1:length(conditions)
@@ -611,62 +588,64 @@ else
         % find the relative condition 
         this_conditon = this_data(this_condition_idx,:);
         
-        if isequal(ylim_mode,'max')
-            ylim([0,overall_max])
-        elseif isequal(ylim_mode,'auto')
-            ylim([0,max(this_conditon(:))])
-        end 
+        % replace death points with NaNs
+        this_conditon2 = this_conditon;
+        this_conditon2(this_conditon2<0) = NaN;
+        % replace when a worm dies and finish it with the maximal
+        % values
+        % this was replace with summations as they are less baised when
+        % using the SICKO coefficient
+%         for k = 1:size(this_conditon2,1)
+%             this_conditon_temp = this_conditon2(k,:);
+%             this_conditon_temp(this_conditon_temp<0) = max(this_conditon_temp(:));
+%             this_conditon2(k,:) = this_conditon_temp;
+%         end
+        % this could either be mean or median or sum
+        this_worm = cumsum(sum(this_conditon2,1,'omitnan'),'omitnan');
         
-        for j = 1:size(this_conditon,1) + 1
+        if SICKO_coef
+            this_worm = this_worm.*SICKO_coef_time(i,:);
+            worm_temp(i,:) = this_worm;
             
-            if isequal(j,size(this_conditon,1) + 1)
-                
-                this_conditon2 = this_conditon;
-                this_conditon2(this_conditon2==0) = NaN;
-                
-                for k = 1:size(this_conditon2,1)
-                    this_conditon_temp = this_conditon2(k,:);
-                    
-                    this_conditon_temp(this_conditon_temp<0) = max(this_conditon_temp(:));
-                    
-                    this_conditon2(k,:) = this_conditon_temp;
-                end
-                
-                this_worm = cumsum(mean(this_conditon2,1,'omitnan'));
-                
-                if SICKO_coef
-                    this_worm = this_worm.*SICKO_coef_time(i,:);
-                    worm_temp(j,:) = this_worm;
-                    
-                    if i == length(conditions)
-                        ylim([0,max(worm_temp(:))])
-                    end
-                else
-                    worm_temp(j,:) = this_worm;
-                    
-                    if i == length(conditions)
-                        ylim([0,max(worm_temp(:))])
-                    end
-                end
-                
-                plot(x,this_worm,'LineWidth',4)
-                
+            if i == length(conditions)
+                ylim([0,max(worm_temp(:))])
             end
+        else
+            worm_temp(i,:) = this_worm;
             
+            if i == length(conditions)
+                ylim([0,max(worm_temp(:))])
+            end
         end
         
-        
+        plot(x,this_worm,'LineWidth',4)
+                
     end
     
     legend(conditions,'location','north','orientation','horizontal','Interpreter','None')
     
     hold off
     
-    output_name = [exp_name '_' title_ext '_' ylim_mode 'means.png'];
+    output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
     
 end
 
 saveas(g,fullfile(CSV_filepath,output_name));
+
+if sum_plot
+    header = ["Condition",string(title_ext)];
+    % this is for csv expoting 
+    data_output = cell(length(conditions),1);
+    for i = 1:length(conditions)
+        data_output{i} = worm_temp(i,:);
+    end
+
+    to_csv_cells = [cellstr(conditions),data_output];
+
+    T = cell2table(to_csv_cells,'VariableNames',header);
+
+    writetable(T,fullfile(CSV_filepath,[exp_name '_SICKO_' title_ext '.csv']))
+end
 
 end
 
