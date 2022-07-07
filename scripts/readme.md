@@ -2,7 +2,7 @@ SICKO scripts and associated files
 
 # steps 
 
-1.  Run through the SICKO_script with all the associated files
+1.  Run through the SICKO_2022 with all the associated files
 
 2.  Run combine_csv.m
 
