@@ -42,19 +42,27 @@ ovr_dir = dir(exp_dir_path);   %get directory of experiment
 ovr_dir = ovr_dir([ovr_dir.isdir]);                   %flag and get only directorys
 ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
 
-%using GUI prompts user to select dead/fled worms across experiment 
-%gets dead and fled data
-%(wells,worms,path)
+sessions = length(ovr_dir);
+total_days = 1;
 
 for img_count = 1:length(ovr_dir)    %double checks if imgs are in replicate
     
     img_dir_path = fullfile(exp_dir_path, ovr_dir(img_count).name);
     
+    day_num = str2num(img_dir_path(end));
+    if day_num > total_days
+        total_days = day_num;
+    end
+    
     img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); %gets img paths per day
     
 end
 
-[dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,length(ovr_dir));
+%using GUI prompts user to select dead/fled worms across experiment 
+%gets dead and fled data
+%(wells,worms,path,total days)
+
+[dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,total_days);
 
 for count = 1:length(ovr_dir)
     
