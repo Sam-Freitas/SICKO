@@ -8,7 +8,7 @@ SICKO scripts and associated files
 
         - files should be set up this way
         
-            - Overarching folder (ex 3HAA potatoes)
+            - Overarching folder (ex. 3HAA potatoes)
             
                 - Repeats (ex Repeat_1)
                 
