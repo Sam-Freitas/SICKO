@@ -180,6 +180,9 @@ for n = 1:length(ovr_dir)
         end
         
     end
+    
+    clearvars -except  csv_header final_csv data_path r overarching_folder final_save_path final_save_name ovr_dir dirFlags ovr_dir biorep_names
+
 end
 
 mkdir(fullfile(final_save_path,[final_save_name '_outputs']));
