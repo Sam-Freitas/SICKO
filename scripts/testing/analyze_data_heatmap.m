@@ -31,13 +31,13 @@ switch answer
     case 'Yes'
         SICKO_coef_option = 1;
         num_worms_after_pass = inputdlg(cellstr(conditions)',...
-            'Number of worms Remaining after passing', [1 100; 1 100; 1 100]);
+            'Number of worms remaining after passing', [1,100]);
         if isempty(num_worms_after_pass)
             error('No data inputted')
         end
         
         num_worms_died_dur_pass = inputdlg(cellstr(conditions)',...
-            'Number of worms died during passing', [1 100; 1 100; 1 100]);
+            'Number of worms died during passing', [1,100]);
         if isempty(num_worms_died_dur_pass)
             error('No data inputted')
         end
@@ -166,7 +166,7 @@ plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
     'max','Integrated_Intensity',1,exp_name,CSV_filepath,SICKO_coef_option,...
     SICKO_coef_time)
 
-disp('eof');
+disp('EOF');
 
 
 
@@ -239,7 +239,7 @@ function heatmap_data(this_data,idx_yes,conditions,csv_table,data_sess_died,titl
 
 overall_max = max(max(this_data(idx_yes,:)));
 
-for i = 1:length(conditions)    
+for i = 1:length(conditions)
     % this is all to find the overall max if the sicko coeff is used
     this_condition_idx = string(csv_table.Condition) == conditions(i);
     this_condition_idx = logical(idx_yes.*this_condition_idx);
@@ -256,11 +256,13 @@ end
 
 g = figure('units','normalized','outerposition',[0 0 1 1]);
 
-x = (1:length(conditions)).^2;
-x2 = 1:length(conditions);
-[~,sq_idx] = min(abs(length(conditions)-x));
+% x = (1:length(conditions)).^2;
+% x2 = 1:length(conditions);
+% [~,sq_idx] = min(abs(length(conditions)-x));
+
 for i = 1:length(conditions)
-    subplot(x2(sq_idx),x2(sq_idx),i)
+%     subplot(x2(sq_idx),x2(sq_idx),i)
+    subplot(length(conditions),length(conditions),i)
     
     % find the index that represents this condition
     this_condition_idx = string(csv_table.Condition) == conditions(i);
@@ -268,7 +270,7 @@ for i = 1:length(conditions)
     % isolate its data
     this_conditions_data = this_data(this_condition_idx,:);
     
-    % if use SICKO coef 
+    % if use SICKO coef
     if SICKO_coef_option
         temp = this_conditions_data.*SICKO_coef_time(i,:);
         temp(temp<0) = -1;
@@ -280,14 +282,14 @@ for i = 1:length(conditions)
     data_across_time_integrated = sum(...
         (this_conditions_data.*(this_conditions_data>0))...
         ,2,'omitnan');
-    % invert the data 
+    % invert the data
     data_across_time_integrated_inverted = 1-...
         (data_across_time_integrated/max(data_across_time_integrated(:)));
     % find if infeected at all
     data_is_infected_bool = ~(data_across_time_integrated>0);
-    % find number of censored points 
+    % find number of censored points
     censor_across_time_integrated = sum(~isnan(this_conditions_data),2);
-    % invert the censor 
+    % invert the censor
     censor_across_time_integrated_inverted = 1-...
         (censor_across_time_integrated/max(censor_across_time_integrated(:)));
     % combine first the death then integrated datats into a single martrix
@@ -296,7 +298,7 @@ for i = 1:length(conditions)
         data_across_time_integrated_inverted,...
         censor_across_time_integrated_inverted];
     % first sort by day of death then sort by integrated data across time
-    % categorically 
+    % categorically
     [~,sort_idx] = sortrows(combined_data_for_sorting,[1,2,3,4]);
     % get the final data representation
     this_conditions_data = this_conditions_data(sort_idx,:);
@@ -341,7 +343,7 @@ for i = 1:length(conditions)
         string([num2str(num_dead) '/' num2str(num_worms) ' dead']), ...
         string([num2str(num_infected) '/' num2str(num_worms) ' infected'])]);
     title([char(conditions(i)) '_' char(title_ext)],'interpreter','none');
-
+    
     
 end
 
