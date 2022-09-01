@@ -1,26 +1,18 @@
-function [dead_data, fled_data] = SICKO_GUI(x,y,z,days)
+function [dead_data, fled_data] = SICKO_GUI(wells,worms,img_dir_path,days)
 
 close all force hidden
 
-% num_days = randi([2 5],1);       %this will be replaced with the data from SICKO runs
-% worms = randi([10 20],1);
-
-%img_dir_path = 'C:\Users\00vsi\Documents\SICKO-main\SICKO-main\scripts';
-wells = x;
-worms = y;
-img_dir_path = z;
-
+% Initializing variables
 answer = 0;
-
 grid_data = zeros(worms, wells);
 dead_data = zeros(worms, wells);
 fled_data = zeros(worms, wells);
 
 hold on;
 
-%normal = white, dead = red, fled = black
-
-cmap = colormap(flipud(hot));   %can change this to any color palette you want
+% Normal = white, dead = red, fled = black
+% Can change this to any color palette 
+cmap = colormap(flipud(hot));  
 colorbar;
 
 h = figure(1);
@@ -36,7 +28,7 @@ a = 0;
 previous_grid_data = grid_data;
 
 while~a
-    [worm_well,worm_number] = get_locations();     %gets all points on figure at one time
+    [worm_well,worm_number] = get_locations();     % Gets all points on figure at one time
     
     for w = 1:length(worm_well)
         worm_well(w) = round(worm_well(w));
@@ -94,7 +86,7 @@ end
 
 for i = 1:worms
     for j = 1:wells
-        if  grid_data(i,j) == 128     %dead
+        if  grid_data(i,j) == 128     % Worms that are dead
             location = well_loc(j);
             prompt = ['Enter the day number that worm ' num2str(i) location ' died'];
             dlgtitle = 'Worm Die';
@@ -119,7 +111,7 @@ for i = 1:worms
                 flag_days = dead_data(i,j);
             end
             
-        elseif grid_data(i,j) == 255      %fled
+        elseif grid_data(i,j) == 255      % Worms that fled
             location = well_loc(j);
             prompt = ['Enter the day number that worm ' num2str(i) location ' fled'];
             dlgtitle = 'Worm Die';
@@ -176,7 +168,7 @@ close all
 
 
 
-    function a = make_grid_line(grid_data,wells, worms)   %makes grid lines on fig
+    function a = make_grid_line(grid_data,wells, worms)   % Makes grid lines on figure
         
         axis on;
         
