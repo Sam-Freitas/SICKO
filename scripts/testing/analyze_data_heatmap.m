@@ -379,6 +379,7 @@ function data_to_csv(csv_output_header,csv_table,...
     data_sess_died,non_cen_data_area,non_cen_data_intensity)
 
 % get names of the csv
+
 csv_names = csv_table.Properties.VariableNames;
 
 % get first three headers 

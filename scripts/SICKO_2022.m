@@ -1,26 +1,20 @@
 clear all 
 close all 
 
-%Y:\Users\Luis Espejo\SICKO\Experiments\Dual Validation\Repeat 1
-
-% number of images in the replicate
+% Number of images in the replicate
 number_imgs_in_replicate = 3;
 
-% image threshold
-% 130 for RFP
-
-% 750 for GFP
+% Image threshold, 130 for RFP, 750 for GFP
 img_thresh = 3200;
 
-% if you know 110% sure that there is ZERO contamination
-% usually for testing only
-% keep at 0
+% If you know there is ZERO contamination, usually for testing only
+% Keep at 0 otherwise
 zero_contamination = 0;
 
-% delete all .csv's in each session folder and start again
+% Delete all .csv's in each session folder and start again
 overwrite_csv = 1;
 
-% Georges border subtraction for session to session fix
+% George Sutphin border subtraction for session to session fix
 use_border_subtraction = 0;
 
 curr_path = pwd;
@@ -38,14 +32,14 @@ if overwrite_csv
     overwrite_file(exp_dir_path);
 end 
 
-ovr_dir = dir(exp_dir_path);   %get directory of experiment
-ovr_dir = ovr_dir([ovr_dir.isdir]);                   %flag and get only directorys
-ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  %remove . and ..
+ovr_dir = dir(exp_dir_path);   % Get directory of experiment
+ovr_dir = ovr_dir([ovr_dir.isdir]);                   % Flag directorys
+ovr_dir(ismember( {ovr_dir.name}, {'.', '..'})) = [];  % Removes . and ..
 
 sessions = length(ovr_dir);
 total_days = 1;
 
-for img_count = 1:length(ovr_dir)    %double checks if imgs are in replicate
+for img_count = 1:length(ovr_dir)    % Double checks if images are in replicate
     
     img_dir_path = fullfile(exp_dir_path, ovr_dir(img_count).name);
     
@@ -54,28 +48,29 @@ for img_count = 1:length(ovr_dir)    %double checks if imgs are in replicate
         total_days = day_num;
     end
     
-    img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); %gets img paths per day
+    img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); % Gets img paths per day
     
 end
 
-%using GUI prompts user to select dead/fled worms across experiment 
-%gets dead and fled data
-%(wells,worms,path,total days)
+% GUI prompts user to select dead/fled worms across experiment 
+% Receives dead and fled data
+% SICKO_GUI(wells,worms,path,total days)
 
 [dead_data,fled_data] = SICKO_GUI(8,12,exp_dir_path,total_days);
+
+% Goes through all days of one experiment 
 
 for count = 1:length(ovr_dir)
     
     img_dir_path = fullfile(exp_dir_path, ovr_dir(count).name);
     
-    img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); %gets img paths per day
+    img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate); % Gets img paths per day
      
-    img_process(img_paths, img_dir_path, img_thresh, zero_contamination, use_border_subtraction,dead_data,fled_data);
+    img_process(img_paths, img_dir_path, img_thresh, zero_contamination, use_border_subtraction, dead_data, fled_data);
 
 end
 
-function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, use_border_subtraction,dead_data,fled_data)
-    
+function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, use_border_subtraction, dead_data, fled_data)
     
     flag = 0;
     
@@ -264,7 +259,6 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
         end
         
         %     linear_data = nonzeros(masked_data);
-        %
         %     [counts,binLoc] = hist(linear_data,255);
         %     stem(binLoc,counts)
         flag = 0;
@@ -285,7 +279,7 @@ function img_process(img_paths, img_dir_path, img_thresh, zero_contamination, us
 end
 
 
-%gets img_paths, sorts, checks if imgs are in replicates
+% Gets img_paths, sorts, checks if imgs are in replicates
 function img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate) 
 
     img_paths = dir(fullfile(img_dir_path, '*.tif'));
@@ -306,8 +300,8 @@ function img_paths = get_img_paths(img_dir_path, number_imgs_in_replicate)
 
 end
 
-
-function overwrite_file(img_dir_path)  %overwrites any csv files that are in the folder
+% Overwrites any csv files that are in the folder
+function overwrite_file(img_dir_path) 
     
     dlg_choice = questdlg({'WARNING',...
     'If you continue, this will overwrite all csvs in the folder'},'WARNING','Continue','Quit','Quit');
@@ -330,6 +324,7 @@ function overwrite_file(img_dir_path)  %overwrites any csv files that are in the
 
 end
 
+% Assigns Terisaki Tray wells appropriate number
 function well = well_number(well_num)
     switch well_num
         case 'a'
