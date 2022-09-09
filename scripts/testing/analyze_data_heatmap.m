@@ -11,21 +11,22 @@ csv_output_header = ["Biological Replicate","Condition","ID (well location)",...
     "Area at First Day of Infection","Area at Last Day of Observation",...
     "Area Integrated Across Time","Max Area Slope to a Point"];
 
-% get csv, if this is not working restart matlab idk anymore 
+% Get CSV
 [CSV_filename,CSV_filepath] = uigetfile('/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments/*.csv',...
     'Select the Compiled csv File');
-% read table
+% Read table
 csv_table = readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve');
 % Your parsing will be different
 
-% get conditions
+% Get condition names
 conditions = string(natsort(unique((csv_table.Condition))));
 condition_idx = 1:length(conditions);
 
-% get SICKO coefficient 
+% Get SICKO coefficient 
 answer = questdlg('Use the SICKO coefficient?', ...
 	'SICKO analysis option', ...
 	'Yes','No','Cancel','Cancel');
+
 % Handle response
 switch answer
     case 'Yes'
@@ -50,42 +51,42 @@ switch answer
         error('Canceled');
 end
 
-% get names of the csv
+% Get names of the csv
 csv_names = csv_table.Properties.VariableNames;
 
-% set up variables
+% Set up variables
 col_intensity = contains(string(csv_names),"Intensity");
 col_area = contains(string(csv_names),"Area");
 col_censor = contains(string(csv_names),"Censored");
 col_dead = contains(string(csv_names),"Dead");
 col_defaults = zeros(size(col_dead)); col_defaults(1:3) = 1;
 
-%isolate tables
+% Isolate tables
 table_inten = csv_table(:,logical(col_defaults+col_intensity));
 table_area = csv_table(:,logical(col_defaults+col_area));
 
-% isolate datasets
+% Isolate datasets
 data_intensity = table2array(csv_table(:,col_intensity));
 data_area = table2array(csv_table(:,col_area));
 data_censor = table2array(csv_table(:,col_censor));
 data_dead = table2array(csv_table(:,col_dead));
 
-% initalize datasets
+% Initalize datasets
 data_sess_died = zeros(length(data_dead),1);
 data_sess_censored = zeros(length(data_dead),1);
 
-% get all the days that a worm died on
-% effective lifespan
+% Get all the days that a worm died on
+% Effective lifespan
 
-%step through all data_dead
+% Step through all data_dead and data_censor
 for i = 1:length(data_dead)
-    % find the first time there is a 1 in the dead section
+    % Find the first time there is a 1 in the dead section
     sess_died = find(data_dead(i,:)>0,1,'first');
-    % if its not empty then make a sess_died
+    % If it's not empty, make a sess_died
     if ~isempty(sess_died)
         data_sess_died(i) = sess_died;
     end
-    % do the same thing but find the censored day
+    % Do the same thing but find the censored day
     sess_censored = find(data_censor(i,:)>0,1,'first');
     if ~isempty(sess_censored)
         data_sess_censored(i) = sess_censored;
@@ -94,27 +95,27 @@ for i = 1:length(data_dead)
 end
 clear sess_censored sess_died i
 
-% if the worm was not dead then set its day of death to end + 1
+% If the worm was not dead then set its day of death to end + 1
 data_sess_died_plot = data_sess_died;
 data_sess_died_plot(data_sess_died_plot==0) = (size(data_dead,2) + 1);
 
-% initalize indexing variables for
-% worms that got infected
+% Initalize indexing variables for
+% Worms that got infected
 idx_infected = (mean(data_area,2,'omitnan')>0);
-% that are NOT censored
+% That are NOT censored
 idx_good_wells = (data_sess_censored==0);
-% that are not dead
+% That are not dead
 idx_not_dead = (data_sess_died==0);
-% worms that only have a single data point that didnt die
+% Worms that only have a single data point that didn't die
 idx_only_single_point = (sum(data_area>0,2)==1).*(~(data_sess_died>0));
 
 idx_yes = logical(~idx_only_single_point);
 
-% start with keep everything
+% Start with keep everything
 idx_2d_data_to_keep = ones(size(data_dead));
-% remove all censored data
+% Remove all censored data
 idx_2d_data_to_keep(data_censor==1) = NaN;
-% remove all dead data
+% Remove all dead data
 for i = 1:length(data_sess_died)
     if data_sess_died(i) > 0 
         idx_2d_data_to_keep(i,data_sess_died(i):end) = -1;
@@ -143,32 +144,51 @@ data_to_csv(csv_output_header,csv_table,...
 display_data(logical(idx_infected.*(~idx_only_single_point)),...
     conditions,csv_table)
 
-heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name,...
-    SICKO_coef_option,SICKO_coef_time)
-heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name,...
-    SICKO_coef_option,SICKO_coef_time)
-close all
-% plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-%     'auto','Integrated_Area',0,exp_name,CSV_filepath,0,[])
-% plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-%     'max','Integrated_Area',0,exp_name,CSV_filepath,0,[])
-plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
-    'max','Integrated_Area',1,exp_name,CSV_filepath,SICKO_coef_option,...
-    SICKO_coef_time)
+if ~SICKO_coef_option
 
-% plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-%     'auto','Integrated_Intensity',0,exp_name,CSV_filepath,0,[])
-% plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-%     'max','Integrated_Intensity',0,exp_name,CSV_filepath,0,[])
-plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
-    'max','Integrated_Intensity',1,exp_name,CSV_filepath,SICKO_coef_option,...
-    SICKO_coef_time)
+    disp("No SICKO Coeff used");
+    
+    heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+        data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name,...
+        SICKO_coef_option,SICKO_coef_time)
+    
+    heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+        data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name,...
+        SICKO_coef_option,SICKO_coef_time)
+    close all
+    
+    plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+        'max','Integrated_Area',1,exp_name,CSV_filepath,SICKO_coef_option,...
+        SICKO_coef_time)
+    
+    plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+        'max','Integrated_Intensity',1,exp_name,CSV_filepath,SICKO_coef_option,...
+        SICKO_coef_time)
+    
+else 
+    for i = 1:2    %Create figures with SICKO coefficient and without
+        heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+            data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name,...
+            SICKO_coef_option,SICKO_coef_time)
+        
+        heatmap_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+            data_sess_died_plot,'Integrated_Intensity',CSV_filepath,exp_name,...
+            SICKO_coef_option,SICKO_coef_time)
+        close all
+        
+        plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+            'max','Integrated_Area',1,exp_name,CSV_filepath,SICKO_coef_option,...
+            SICKO_coef_time)
+        
+        plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+            'max','Integrated_Intensity',1,exp_name,CSV_filepath,SICKO_coef_option,...
+            SICKO_coef_time)
+        
+        SICKO_coef_option = 0; % Also create figures without SICKO coefficient
+    end
+end
 
 disp('EOF');
-
-
 
 function SICKO_coef_time = compute_SICKO_coef(this_data,...
     idx_yes,conditions,csv_table,num_worms_died_dur_pass,num_worms_after_pass,...
@@ -181,18 +201,17 @@ for i = 1:length(conditions)
     this_condition_idx = string(csv_table.Condition) == conditions(i);
     
     this_condition_idx = logical(idx_yes.*this_condition_idx);
-    % find the relative condition
+    % Find the relative condition
     this_conditon = this_data(this_condition_idx,:);
     
     num_died_not_infected_observed = sum(sum(this_conditon,2,'omitnan')<0);
     num_died_infected_observed = sum(sum(this_conditon,2,'omitnan')>0);
-    total_died_during_observation = sum([num_died_not_infected_observed,num_died_infected_observed]);
-    % assuming cond gls130,ku25,n2 for testing
+    total_died_during_observation = sum([num_died_not_infected_observed,num_died_infected_observed]); 
+    
+    % Assuming cond gls130,ku25,n2 for testing
     inital_count = str2double(string(num_worms_after_pass));
     died_during_passing = str2double(string(num_worms_died_dur_pass));
-    %             inital_count = [150,150];
-    %             died_during_passing = [9,15];
-    
+  
     worms_in_this_exp = size(this_conditon,1);
     
     did_not_die_normally = ~(sum(this_conditon,2,'omitnan')<0);
@@ -256,12 +275,8 @@ end
 
 g = figure('units','normalized','outerposition',[0 0 1 1]);
 
-% x = (1:length(conditions)).^2;
-% x2 = 1:length(conditions);
-% [~,sq_idx] = min(abs(length(conditions)-x));
-
 for i = 1:length(conditions)
-%     subplot(x2(sq_idx),x2(sq_idx),i)
+    
     subplot(length(conditions),length(conditions),i)
     
     % find the index that represents this condition
@@ -270,7 +285,7 @@ for i = 1:length(conditions)
     % isolate its data
     this_conditions_data = this_data(this_condition_idx,:);
     
-    % if use SICKO coef
+    % if using SICKO coefficient
     if SICKO_coef_option
         temp = this_conditions_data.*SICKO_coef_time(i,:);
         temp(temp<0) = -1;
@@ -285,7 +300,7 @@ for i = 1:length(conditions)
     % invert the data
     data_across_time_integrated_inverted = 1-...
         (data_across_time_integrated/max(data_across_time_integrated(:)));
-    % find if infeected at all
+    % find if infected at all
     data_is_infected_bool = ~(data_across_time_integrated>0);
     % find number of censored points
     censor_across_time_integrated = sum(~isnan(this_conditions_data),2);
@@ -347,7 +362,11 @@ for i = 1:length(conditions)
     
 end
 
-out_name = strrep([exp_name '_' title_ext '.png'],' ','_');
+if SICKO_coef_option
+    out_name = strrep([exp_name '_' title_ext '_wSICKO_Coeff.png'],' ','_');
+else
+    out_name = strrep([exp_name '_' title_ext '.png'],' ','_');
+end
 
 saveas(g,fullfile(CSV_filepath,out_name))
 
