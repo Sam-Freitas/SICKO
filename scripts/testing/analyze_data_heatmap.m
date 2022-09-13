@@ -14,13 +14,15 @@ csv_output_header = ["Biological Replicate","Condition","ID (well location)",...
 % Get CSV
 [CSV_filename,CSV_filepath] = uigetfile('/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments/*.csv',...
     'Select the Compiled csv File');
+% [CSV_filename,CSV_filepath] = uigetfile('/Users/samfreitas/Documents/Sutphin lab/SICKO/data/N2_GLS130_GOP50_outputs/*.csv',...
+%     'Select the Compiled csv File');
 % Read table
 csv_table = readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve');
 % Your parsing will be different
 
 % Get condition names
 conditions = string(natsort(unique((csv_table.Condition))));
-condition_idx = 1:length(conditions);
+% condition_idx = 1:length(conditions);
 
 % Get SICKO coefficient 
 answer = questdlg('Use the SICKO coefficient?', ...
@@ -71,6 +73,8 @@ data_area = table2array(csv_table(:,col_area));
 data_censor = table2array(csv_table(:,col_censor));
 data_dead = table2array(csv_table(:,col_dead));
 
+clear col_area col_censor col_dead col_defaults col_intensity csv_names
+
 % Initalize datasets
 data_sess_died = zeros(length(data_dead),1);
 data_sess_censored = zeros(length(data_dead),1);
@@ -102,13 +106,19 @@ data_sess_died_plot(data_sess_died_plot==0) = (size(data_dead,2) + 1);
 % Initalize indexing variables for
 % Worms that got infected
 idx_infected = (mean(data_area,2,'omitnan')>0);
-% That are NOT censored
-idx_good_wells = (data_sess_censored==0);
-% That are not dead
-idx_not_dead = (data_sess_died==0);
+% % That are NOT censored
+% idx_good_wells = (data_sess_censored==0);
+% % That are not dead
+% idx_not_dead = (data_sess_died==0);
+
 % Worms that only have a single data point that didn't die
+% most of the time these worms seem to be noise and throw off the data
+% calculations, if you want to include the "singletons" then change idx_yes
+% to logical(ones(size(idx_infected)))
 idx_only_single_point = (sum(data_area>0,2)==1).*(~(data_sess_died>0));
 
+% we removed worms that didnt die and only had a single point of infection data 
+% these seems to be not infected and only noise 
 idx_yes = logical(~idx_only_single_point);
 
 % Start with keep everything
@@ -122,6 +132,7 @@ for i = 1:length(data_sess_died)
     end
 end
 
+% apply the censored data (NaN) and dead (-1) to data
 non_cen_data_area = data_area.*idx_2d_data_to_keep;
 non_cen_data_area(idx_2d_data_to_keep==-1) = -1;
 non_cen_data_intensity = data_intensity.*idx_2d_data_to_keep;
@@ -204,14 +215,20 @@ for i = 1:length(conditions)
     % Find the relative condition
     this_conditon = this_data(this_condition_idx,:);
     
+    % all dead worms are marked as -1 
+    % if the worm died with no infection then its sum across its data will be negative
     num_died_not_infected_observed = sum(sum(this_conditon,2,'omitnan')<0);
-    num_died_infected_observed = sum(sum(this_conditon,2,'omitnan')>0);
+    % this finds all the worms that died (-1) then finds if there is 
+    % any signal on that data, use an 'and' gate for died and had infection
+    % for num that died while infected and observed 
+    num_died_infected_observed = sum((sum(this_conditon,2,'omitnan')>0).*(sum(this_conditon == -1,2)>0));
+%     num_died_infected_observed = sum(sum(this_conditon,2,'omitnan')>0);
     total_died_during_observation = sum([num_died_not_infected_observed,num_died_infected_observed]); 
     
     % Assuming cond gls130,ku25,n2 for testing
     inital_count = str2double(string(num_worms_after_pass));
     died_during_passing = str2double(string(num_worms_died_dur_pass));
-  
+    
     worms_in_this_exp = size(this_conditon,1);
     
     did_not_die_normally = ~(sum(this_conditon,2,'omitnan')<0);
