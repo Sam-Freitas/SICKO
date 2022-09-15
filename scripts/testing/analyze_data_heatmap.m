@@ -177,7 +177,13 @@ if ~SICKO_coef_option
         SICKO_coef_time)
     
 else 
+    temp = SICKO_coef_time;
     for i = 1:2    %Create figures with SICKO coefficient and without
+
+        if SICKO_coef_option == 0
+            SICKO_coef_time = ones(1,size(data_area,2));
+        end
+
         heatmap_data(non_cen_data_area,idx_yes,conditions,csv_table,...
             data_sess_died_plot,'Integrated_Area',CSV_filepath,exp_name,...
             SICKO_coef_option,SICKO_coef_time)
@@ -197,9 +203,16 @@ else
         
         SICKO_coef_option = 0; % Also create figures without SICKO coefficient
     end
+    SICKO_coef_option = 1;
+    SICKO_coef_time = temp;
 end
 
 disp('EOF');
+close all
+
+
+
+% these are the functions 
 
 function SICKO_coef_time = compute_SICKO_coef(this_data,...
     idx_yes,conditions,csv_table,num_worms_died_dur_pass,num_worms_after_pass,...
@@ -542,7 +555,15 @@ disp(output_path);
 
 T = cell2table(final_array,'VariableNames',csv_output_header);
 
-writetable(T,output_path);
+Area_data = non_cen_data_area;
+T2 = array2table(Area_data);
+
+Intensity_data = non_cen_data_area;
+T3 = array2table(Intensity_data);
+
+T4 = [T,T2,T3];
+
+writetable(T4,output_path);
 
 end
 
@@ -550,7 +571,7 @@ end
 
 
 function plot_data(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,sum_plot,exp_name,CSV_filepath,...
-    SICKO_coef,SICKO_coef_time)
+    SICKO_coef_option,SICKO_coef_time)
 
 g = figure('units','normalized','outerposition',[0 0 1 1]);
 title(exp_name,'Interpreter','None');
@@ -614,7 +635,11 @@ if ~sum_plot
     
 else
     
-    title([exp_name '-' title_ext ' - cumulative sum of the daily integral of the data'],'Interpreter','None')
+    if SICKO_coef_option
+        title([exp_name '-' title_ext 'wSICKO - cumulative sum of the daily integral of the data'],'Interpreter','None')
+    else
+        title([exp_name '-' title_ext ' - cumulative sum of the daily integral of the data'],'Interpreter','None')
+    end
     
     x = 1:size(this_data,2);
     for i = 1:length(conditions)
@@ -642,7 +667,7 @@ else
         % this could either be mean or median or sum
         this_worm = cumsum(sum(this_conditon2,1,'omitnan'),'omitnan');
         
-        if SICKO_coef
+        if SICKO_coef_option
             this_worm = this_worm.*SICKO_coef_time(i,:);
             worm_temp(i,:) = this_worm;
             
@@ -664,8 +689,14 @@ else
     legend(l,'location','north','orientation','horizontal','Interpreter','None')
     
     hold off
+
+    if SICKO_coef_option
+        output_name = [exp_name '_' title_ext '_' ylim_mode '_wSICKO_Coeff.png'];
+    else
+        output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
+    end
     
-    output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
+%     output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
     
 end
 
