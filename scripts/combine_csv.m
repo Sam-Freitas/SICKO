@@ -1,7 +1,7 @@
 clear all
 curr_path = pwd;
 
-data_path = fullfile('/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments/');
+data_path = fullfile('/Volumes/Sutphin server/Users/Luis Espejo');
 
 overarching_folder = uigetdir(data_path);
 

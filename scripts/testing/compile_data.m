@@ -1,10 +1,24 @@
-clear all
+clearvars -except CSV_filepath CSV_filename
 
 % get csv
 [CSV_filename,CSV_filepath] = uigetfile('/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments/*.csv',...
                         'Select the Experiment csv File');
                   
 csv_table= readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve'); % Your parsing will be different
+
+% this fixes the 001-009 export problem that can happen
+days = csv_table.Day;
+days = str2double(erase(string(days),{'001','002','003','004','005','006','007','008','009'}));
+csv_table.Day = days;
+
+% sometimes there is a problem with the naming scheme and the sessions get
+% mixed up so the session variable gets removed
+csv_table.Session = ones(size(csv_table.Session));
+
+% find the "intensity" data as its the first data location
+imported_csv_header = csv_table.Properties.VariableNames;
+idx_of_intensity = string(imported_csv_header) == 'Intensity';
+idx_of_intensity = nonzeros((1:length(idx_of_intensity)).*(idx_of_intensity));
 
 % convert identifiers to cell
 identifiers = table2cell(csv_table(:,[2:6]));
@@ -17,8 +31,8 @@ catch
     disp('conditions not found using Strain (group) instead')
     conditions = csv_table.("Strain (group)");
 end
-sessions = csv_table.Session;
-days = csv_table.Day;
+% sessions = csv_table.Session;
+% days = csv_table.Day;
 locations = csv_table.("ID (well location)");
 
 % initalize arrays
