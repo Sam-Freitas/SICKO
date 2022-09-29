@@ -15,7 +15,7 @@ zero_contamination = 0;
 overwrite_csv = 1;
 
 % George Sutphin border subtraction for session to session fix
-use_border_subtraction = 0;
+use_border_subtraction = 1;
 
 curr_path = pwd;
 
