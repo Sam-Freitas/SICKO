@@ -178,7 +178,7 @@ if ~SICKO_coef_option
     
 else 
     temp = SICKO_coef_time;
-    for i = 1:2    %Create figures with SICKO coefficient and without
+    for i = 1:2    %Create figures with SICKO coefficient and without this is pretty hardcode-y ugh
 
         if SICKO_coef_option == 0
             SICKO_coef_time = ones(1,size(data_area,2));
@@ -193,11 +193,19 @@ else
             SICKO_coef_option,SICKO_coef_time)
         close all
         
-        plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+%         plot_data(non_cen_data_area,idx_yes,conditions,csv_table,...
+%             'max','Integrated_Area',1,exp_name,CSV_filepath,SICKO_coef_option,...
+%             SICKO_coef_time)
+%         
+%         plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+%             'max','Integrated_Intensity',1,exp_name,CSV_filepath,SICKO_coef_option,...
+%             SICKO_coef_time)
+
+        plot_data_individual(non_cen_data_area,idx_yes,conditions,csv_table,...
             'max','Integrated_Area',1,exp_name,CSV_filepath,SICKO_coef_option,...
             SICKO_coef_time)
         
-        plot_data(non_cen_data_intensity,idx_yes,conditions,csv_table,...
+        plot_data_individual(non_cen_data_intensity,idx_yes,conditions,csv_table,...
             'max','Integrated_Intensity',1,exp_name,CSV_filepath,SICKO_coef_option,...
             SICKO_coef_time)
         
@@ -683,6 +691,89 @@ else
         end
         
         l(i) = plot(x,this_worm,'LineWidth',4,'DisplayName',char(conditions(i)));
+%         scatter(x,this_worm,SICKO_coef_time(i,:).*2,l(i).Color,'filled')
+    end
+    
+    legend(l,'location','north','orientation','horizontal','Interpreter','None')
+    
+    hold off
+
+    if SICKO_coef_option
+        output_name = [exp_name '_' title_ext '_' ylim_mode '_wSICKO_Coeff.png'];
+    else
+        output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
+    end
+    
+%     output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
+    
+end
+
+saveas(g,fullfile(CSV_filepath,output_name));
+
+if sum_plot
+    header = ["Condition",string(title_ext)];
+    % this is for csv expoting 
+    data_output = cell(length(conditions),1);
+    for i = 1:length(conditions)
+        data_output{i} = worm_temp(i,:);
+    end
+
+    to_csv_cells = [cellstr(conditions),data_output];
+
+    T = cell2table(to_csv_cells,'VariableNames',header);
+
+    writetable(T,fullfile(CSV_filepath,[exp_name '_SICKO_' title_ext '.csv']))
+end
+
+end
+
+
+function plot_data_individual(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,sum_plot,exp_name,CSV_filepath,...
+    SICKO_coef_option,SICKO_coef_time)
+
+g = figure('units','normalized','outerposition',[0 0 1 1]);
+title(exp_name,'Interpreter','None');
+
+overall_max = max(max(this_data(idx_yes,:)));
+
+if sum_plot
+    
+    if SICKO_coef_option
+        title([exp_name '-' title_ext 'wSICKO - cumulative sum of the daily integral of the data'],'Interpreter','None')
+    else
+        title([exp_name '-' title_ext ' - cumulative sum of the daily integral of the data'],'Interpreter','None')
+    end
+
+    colors = ["r-","b-","g-","r--","b--","g--","r.","b.","g."];
+    
+    x = 1:size(this_data,2);
+    for i = 1:length(conditions)
+                
+        hold on
+        
+        this_condition_idx = string(csv_table.Condition) == conditions(i);
+        
+        this_condition_idx = logical(idx_yes.*this_condition_idx);
+        % find the relative condition 
+        this_conditon = this_data(this_condition_idx,:);
+        
+        % replace death points with NaNs
+        this_conditon2 = this_conditon;
+        this_conditon2(this_conditon2<0) = NaN;
+        
+        if SICKO_coef_option
+            each_worm = this_conditon2.*SICKO_coef_time(i,:);
+            each_worm_cumsum = cumsum(each_worm,2,'omitnan');
+        else
+            each_worm = this_conditon2;
+            each_worm_cumsum = cumsum(each_worm,2,'omitnan');
+        end
+
+        mean_line = mean(each_worm_cumsum,1,'omitnan');
+        std_error = std(each_worm_cumsum,1)/sqrt(size(each_worm,1));
+        
+%         l(i) = plot(x,mean_line,'LineWidth',4,'Color',colors(i),'LineStyle','-');
+        l(i) = errorbar(x,mean_line,std_error,colors(i),'LineWidth',4,'DisplayName',char(conditions(i)));
 %         scatter(x,this_worm,SICKO_coef_time(i,:).*2,l(i).Color,'filled')
     end
     
