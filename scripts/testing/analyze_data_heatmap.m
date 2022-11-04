@@ -739,9 +739,9 @@ overall_max = max(max(this_data(idx_yes,:)));
 if sum_plot
     
     if SICKO_coef_option
-        title([exp_name '-' title_ext 'wSICKO - cumulative sum of the daily integral of the data'],'Interpreter','None')
+        title([exp_name '-' title_ext ' wSICKO - mean of the cumulative sum of the daily integral of the data'],'Interpreter','None')
     else
-        title([exp_name '-' title_ext ' - cumulative sum of the daily integral of the data'],'Interpreter','None')
+        title([exp_name '-' title_ext ' - mean of the cumulative sum of the daily integral of the data'],'Interpreter','None')
     end
 
     colors = ["r-","b-","g-","r--","b--","g--","r.","b.","g."];
@@ -770,6 +770,7 @@ if sum_plot
         end
 
         mean_line = mean(each_worm_cumsum,1,'omitnan');
+        worm_temp(i,:) = mean_line;
         std_error = std(each_worm_cumsum,1)/sqrt(size(each_worm,1));
         
 %         l(i) = plot(x,mean_line,'LineWidth',4,'Color',colors(i),'LineStyle','-');
