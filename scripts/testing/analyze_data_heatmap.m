@@ -315,7 +315,7 @@ g = figure('units','normalized','outerposition',[0 0 1 1]);
 
 for i = 1:length(conditions)
     
-    subplot(length(conditions),length(conditions),i)
+    subplot(1,length(conditions),i)
     
     % find the index that represents this condition
     this_condition_idx = string(csv_table.Condition) == conditions(i);
@@ -401,9 +401,9 @@ for i = 1:length(conditions)
 end
 
 if SICKO_coef_option
-    out_name = strrep([exp_name '_' title_ext '_wSICKO_Coeff.png'],' ','_');
+    out_name = strrep(['heatmap_' exp_name '_' title_ext '_wSICKO_Coeff.png'],' ','_');
 else
-    out_name = strrep([exp_name '_' title_ext '.png'],' ','_');
+    out_name = strrep(['heatmap_' exp_name '_' title_ext '.png'],' ','_');
 end
 
 saveas(g,fullfile(CSV_filepath,out_name))
@@ -773,8 +773,8 @@ if sum_plot
         worm_temp(i,:) = mean_line;
         std_error = std(each_worm_cumsum,1)/sqrt(size(each_worm,1));
         
-%         l(i) = plot(x,mean_line,'LineWidth',4,'Color',colors(i),'LineStyle','-');
-        l(i) = errorbar(x,mean_line,std_error,colors(i),'LineWidth',4,'DisplayName',char(conditions(i)));
+        l(i) = plot(x,mean_line,colors(i),'LineWidth',4,'DisplayName',char(conditions(i)));
+        h(i) = errorbar(x,mean_line,std_error,colors(i),'LineWidth',1,'DisplayName',char(conditions(i)));
 %         scatter(x,this_worm,SICKO_coef_time(i,:).*2,l(i).Color,'filled')
     end
     
