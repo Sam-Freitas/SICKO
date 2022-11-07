@@ -323,12 +323,15 @@ for i = 1:length(conditions)
     % isolate its data
     this_conditions_data = this_data(this_condition_idx,:);
     
-    % if using SICKO coefficient
-    if SICKO_coef_option
-        temp = this_conditions_data.*SICKO_coef_time(i,:);
-        temp(temp<0) = -1;
-        this_conditions_data = temp;
-    end
+    % SICKO used to be used here but it was changing where each individual
+    % animal was plotted, so using it later makes it the same with and
+    % without it
+%     % if using SICKO coefficient
+%     if SICKO_coef_option
+%         temp = this_conditions_data.*SICKO_coef_time(i,:);
+%         temp(temp<0) = -1;
+%         this_conditions_data = temp;
+%     end
     
     this_conditions_death = data_sess_died(this_condition_idx);
     % integrate across time for sorting
@@ -355,6 +358,14 @@ for i = 1:length(conditions)
     [~,sort_idx] = sortrows(combined_data_for_sorting,[1,2,3,4]);
     % get the final data representation
     this_conditions_data = this_conditions_data(sort_idx,:);
+
+    % if using SICKO coefficient
+    if SICKO_coef_option
+        temp = this_conditions_data.*SICKO_coef_time(i,:);
+        temp(temp<0) = -1;
+        this_conditions_data = temp;
+    end
+
     % scale the data
     this_scale = round((max(this_conditions_data(:))/overall_max)*255);
     % to rgb
@@ -373,7 +384,7 @@ for i = 1:length(conditions)
     for j = 1:length(row_nan)
         temp_img(row_nan(j),col_nan(j),:) = [0,0,0];
     end
-    
+    % Find the seperation between infected and not
     infection_seperation_idx = find(data_is_infected_bool(sort_idx)==1,1,'first');
     
     if ~isempty(infection_seperation_idx)
@@ -731,17 +742,18 @@ end
 function plot_data_individual(this_data,idx_yes,conditions,csv_table,ylim_mode,title_ext,sum_plot,exp_name,CSV_filepath,...
     SICKO_coef_option,SICKO_coef_time)
 
-g = figure('units','normalized','outerposition',[0 0 1 1]);
-title(exp_name,'Interpreter','None');
+% g = figure('units','normalized','outerposition',[0 0 1 1]);
+g = figure();
+% title(exp_name,'Interpreter','None');
 
 overall_max = max(max(this_data(idx_yes,:)));
 
 if sum_plot
     
     if SICKO_coef_option
-        title([exp_name '-' title_ext ' wSICKO - mean of the cumulative sum of the daily integral of the data'],'Interpreter','None')
+        title({[exp_name '-' title_ext] ,' wSICKO - mean of the cumulative sum of the daily integral of the data',''},'Interpreter','None')
     else
-        title([exp_name '-' title_ext ' - mean of the cumulative sum of the daily integral of the data'],'Interpreter','None')
+        title({[exp_name '-' title_ext] ,' - mean of the cumulative sum of the daily integral of the data',''},'Interpreter','None')
     end
 
     colors = ["r-","b-","g-","r--","b--","g--","r.","b.","g."];
@@ -794,20 +806,20 @@ end
 
 saveas(g,fullfile(CSV_filepath,output_name));
 
-if sum_plot
-    header = ["Condition",string(title_ext)];
-    % this is for csv expoting 
-    data_output = cell(length(conditions),1);
-    for i = 1:length(conditions)
-        data_output{i} = worm_temp(i,:);
-    end
-
-    to_csv_cells = [cellstr(conditions),data_output];
-
-    T = cell2table(to_csv_cells,'VariableNames',header);
-
-    writetable(T,fullfile(CSV_filepath,[exp_name '_SICKO_' title_ext '.csv']))
-end
+% if sum_plot
+%     header = ["Condition",string(title_ext)];
+%     % this is for csv expoting 
+%     data_output = cell(length(conditions),1);
+%     for i = 1:length(conditions)
+%         data_output{i} = worm_temp(i,:);
+%     end
+% 
+%     to_csv_cells = [cellstr(conditions),data_output];
+% 
+%     T = cell2table(to_csv_cells,'VariableNames',header);
+% 
+%     writetable(T,fullfile(CSV_filepath,[exp_name '_SICKO_' title_ext '.csv']))
+% end
 
 end
 
