@@ -77,7 +77,7 @@ clear col_area col_censor col_dead col_defaults col_intensity csv_names
 
 % Initalize datasets
 data_sess_died = zeros(length(data_dead),1);
-data_sess_censored = zeros(length(data_dead),1);
+% data_sess_censored = zeros(length(data_dead),1);
 
 % Get all the days that a worm died on
 % Effective lifespan
@@ -91,10 +91,10 @@ for i = 1:length(data_dead)
         data_sess_died(i) = sess_died;
     end
     % Do the same thing but find the censored day
-    sess_censored = find(data_censor(i,:)>0,1,'first');
-    if ~isempty(sess_censored)
-        data_sess_censored(i) = sess_censored;
-    end
+%     sess_censored = find(data_censor(i,:)>0,1,'first');
+%     if ~isempty(sess_censored)
+%         data_sess_censored(i) = sess_censored;
+%     end
     
 end
 clear sess_censored sess_died i
@@ -116,6 +116,8 @@ idx_infected = (mean(data_area,2,'omitnan')>0);
 % calculations, if you want to include the "singletons" then change idx_yes
 % to logical(ones(size(idx_infected)))
 idx_only_single_point = (sum(data_area>0,2)==1).*(~(data_sess_died>0));
+% temp = (sum(data_intensity>0,2)==1).*(~(data_sess_died>0));
+% idx_only_single_point = (idx_only_single_point + temp)>0;
 
 % we removed worms that didnt die and only had a single point of infection data 
 % these seems to be not infected and only noise 
@@ -132,11 +134,42 @@ for i = 1:length(data_sess_died)
     end
 end
 
-% apply the censored data (NaN) and dead (-1) to data
-non_cen_data_area = data_area.*idx_2d_data_to_keep;
-non_cen_data_area(idx_2d_data_to_keep==-1) = -1;
-non_cen_data_intensity = data_intensity.*idx_2d_data_to_keep;
-non_cen_data_intensity(idx_2d_data_to_keep==-1) = -1;
+% this is a backwards fit becuase for some reason there is a lot of NaN
+% values in the data_intensity variable, basically replace all the nans
+% with ones then multiply out the idx_data to keep to replace 1s with
+% censored data (NaNs) and dead data (-1) 
+temp_area = data_area;
+temp_inten = data_intensity;
+% get all the nan values that came with the loaded data
+prev_nan_in_area = isnan(temp_area);
+prev_nan_in_inten = isnan(temp_inten);
+temp_area(isnan(temp_area)) = 0;
+temp_inten(isnan(temp_inten)) = 0;
+
+temp_area = temp_area.*idx_2d_data_to_keep;
+temp_inten = temp_inten.*idx_2d_data_to_keep;
+% d is where both signals are 0 representing a true zero not a over
+% corrected signal 
+d = ((temp_area.*temp_inten)==0);
+temp_inten = temp_inten+1;
+temp_area = temp_area+1;
+temp_inten(d) = 0;
+temp_area(d) = 0;
+
+temp_inten(idx_2d_data_to_keep==-1) = -1;
+temp_inten(temp_inten==1) = 0;
+non_cen_data_intensity = temp_inten;
+
+temp_area(idx_2d_data_to_keep==-1) = -1;
+temp_area(temp_area==1) = 0;
+non_cen_data_area = temp_area;
+
+% % % % apply the censored data (NaN) and dead (-1) to data
+%%%% this is the old way of doing this and above is the new
+% % % non_cen_data_area = data_area.*idx_2d_data_to_keep;
+% % % non_cen_data_area(idx_2d_data_to_keep==-1) = -1;
+% % % non_cen_data_intensity = data_intensity.*idx_2d_data_to_keep;
+% % % non_cen_data_intensity(idx_2d_data_to_keep==-1) = -1;
 
 [~,exp_name,~] = fileparts(CSV_filename);
 
@@ -487,11 +520,11 @@ first_sess_nonzero_data = nan(size(data_sess_died));
 for i = 1:length(data_sess_died)
     % find the data for intesity or area doesnt really matter for this
     % animal in the data
-    this_data_inten = data_intensity(i,:);
-    this_data_area = data_area(i,:);
+    this_data_inten = non_cen_data_intensity(i,:);
+    this_data_area = non_cen_data_area(i,:);
     this_data_censor = data_dead(i,:);
     this_data_censor(isnan(this_data_censor)) = 1;
-    x = 1:length(this_data_inten);
+%     x = 1:length(this_data_inten);
     
     % try to find the first session that it was infected
     this_first_sess_idx = find((this_data_inten>0) == 1, 1, 'first');
@@ -577,7 +610,7 @@ T = cell2table(final_array,'VariableNames',csv_output_header);
 Area_data = non_cen_data_area;
 T2 = array2table(Area_data);
 
-Intensity_data = non_cen_data_area;
+Intensity_data = non_cen_data_intensity;
 T3 = array2table(Intensity_data);
 
 T4 = [T,T2,T3];
