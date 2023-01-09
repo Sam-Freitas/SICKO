@@ -1,10 +1,14 @@
-clearvars -except CSV_filepath CSV_filename
+% This script takes the combined csvs and compiles the data into a longitudinal study for future analysis 
+% The input is the combined csv (named just the experiment name.csv) 
+% data where each row has all the associated data for that specific day or
+% session
+clear all
+close all force hidden
 
-% get csv
+% get csv filepath of the initial combined file
 [CSV_filename,CSV_filepath] = uigetfile('/Volumes/Sutphin server/Users/Luis Espejo/SICKO/Experiments/*.csv',...
                         'Select the Experiment csv File');
-                  
-csv_table= readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve'); % Your parsing will be different
+csv_table = readtable(fullfile(CSV_filepath,CSV_filename),'VariableNamingRule','preserve'); % Your parsing will be different
 
 % this fixes the 001-009 export problem that can happen
 days = csv_table.Day;
@@ -95,7 +99,8 @@ for i = 1:length(unique_rows_idx)
     this_idx = (sum(abs(identifiers_idx-repeated_row),2)==0);
     this_idx = nonzeros(this_idx.*idx);
     
-    % isolate and create the means of the data points
+    % isolate and create the means of the data points (there are usually 3
+    % that are combined into one)
     this_data = data(this_idx,:);
     this_data = mean(this_data);
     this_data(3:4) = (this_data(3:4)>0);
@@ -106,6 +111,8 @@ for i = 1:length(unique_rows_idx)
 end
 clear this_data repeated_row this_idx this_unique_row
 
+% this next part of the script is the putting the isolated columns into
+% arrays for future analysis 
 final_idx_no_day_session = unique_rows_idx(:,[1,2,5]);
 unique_final_idx_no_day_session = unique(unique_rows_idx(:,[1,2,5]),'rows');
 
@@ -116,6 +123,8 @@ isolated_censor = cell(length(unique_final_idx_no_day_session),1);
 isolated_dead = cell(length(unique_final_idx_no_day_session),1);
 isolated_fled = cell(length(unique_final_idx_no_day_session),1);
 
+% loop over each index and populate the sub arrays that will make up the
+% exported array
 for i = 1:length(unique_final_idx_no_day_session)
     
     this_final_idx = unique_final_idx_no_day_session(i,:);
@@ -133,7 +142,7 @@ for i = 1:length(unique_final_idx_no_day_session)
     this_isolated_censor = cell(length(this_idx),1);
     this_isolated_dead = cell(length(this_idx),1);
     this_isolated_fled = cell(length(this_idx),1);
-    
+    % populate the sub array data
     for j = 1:length(this_idx)
         sub_idx = this_idx(j);
         
@@ -157,10 +166,11 @@ for i = 1:length(unique_final_idx_no_day_session)
 end
 clear this_isolated_area this_isolated_inten this_isolated_censor this_isolated_dead this_isolated_fled
 
+% isolate the data and combine them into a single large array 
 isolated_data = [isolated_intensity,isolated_area,isolated_censor,isolated_dead,isolated_fled];
 
-rep_cond_loc_array = cell(size(unique_final_idx_no_day_session));
-
+% find the unique parts of the system that need to be parsed out to make
+% sure that the data is not overlapping itself
 unique_repeats = natsort(unique(repeats));
 unique_conditions = natsort(unique(conditions));
 unique_locs = natsort(unique(locations));
