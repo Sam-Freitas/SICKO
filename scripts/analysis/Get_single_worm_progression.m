@@ -16,7 +16,7 @@ worm_location =  ["2b"]; %["6b","11c"]; %
 bio_repeat = 2;
 img_thresh = 3500*3;
 
-overarching_folder = 'Y:\Users\Luis Espejo\SICKO\Experiments\Test Dual Validation - Copy';
+% overarching_folder = 'Y:\Users\Luis Espejo\SICKO\Experiments\Test Dual Validation - Copy';
 overarching_folder = 'Y:\Users\Luis Espejo\SICKO\Experiments\N2_KU25_GOP50 - Copy';
 % overarching_folder = '/Volumes/Sutphin server/Users/Luis Espejo/Terasaki Validation SU10';
 
