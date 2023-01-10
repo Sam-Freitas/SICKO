@@ -11,9 +11,9 @@ clear all
 curr_path = pwd;
 
 % WORM_TO_ISOLATE
-worm_condition = "KU25"; %"N2";
-worm_location =  ["2b"]; %["6b","11c"]; %
-bio_repeat = 2;
+worm_condition =  "N2"; %"KU25";
+worm_location =  ["6b"]%,"11c"]; %["2b"]; %
+bio_repeat = 1;
 img_thresh = 3500*3;
 
 % overarching_folder = 'Y:\Users\Luis Espejo\SICKO\Experiments\Test Dual Validation - Copy';

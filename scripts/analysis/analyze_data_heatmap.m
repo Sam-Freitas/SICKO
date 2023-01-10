@@ -757,6 +757,7 @@ if sum_plot
         end
 
         mean_line = mean(each_worm_cumsum,1,'omitnan');
+        % standard error of the mean
         std_error = std(each_worm_cumsum,1)/sqrt(size(each_worm,1));
         
         l(i) = plot(x,mean_line,colors(i),'LineWidth',4,'DisplayName',char(conditions(i)));
