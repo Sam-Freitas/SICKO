@@ -28,3 +28,7 @@ SICKO was developed to qualtitively analyze infection progression of fluorescent
 ```sh
 git clone https://github.com/Sam-Freitas/SICKO
 ```
+
+![default_img2](https://github.com/Sam-Freitas/SICKO/blob/main/scripts/analysis/out2.png)
+
+![default_img3](https://github.com/Sam-Freitas/SICKO/blob/main/scripts/analysis/out3.png)
