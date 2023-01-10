@@ -7,6 +7,7 @@
 % adjacent to where the data folder is located, this will contain the
 % combined csv labeled as the experiments overarching name.csv
 % 
+% [fList1,pList1] = matlab.codetools.requiredFilesAndProducts([pwd '/Worm_paparazzi_setupv2.m']);
 clear all
 close all force hidden
 curr_path = pwd;
