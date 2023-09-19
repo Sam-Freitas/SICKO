@@ -418,9 +418,9 @@ for i = 1:length(conditions)
 end
 % add a title that has or doesnt the sicko option
 if SICKO_coef_option
-    out_name = strrep(['heatmap_' exp_name '_' title_ext '_wSICKO_Coeff.png'],' ','_');
+    out_name = strrep(['heatmap_' exp_name '_' title_ext '_wSICKO_Coeff.pdf'],' ','_');
 else
-    out_name = strrep(['heatmap_' exp_name '_' title_ext '.png'],' ','_');
+    out_name = strrep(['heatmap_' exp_name '_' title_ext '.pdf'],' ','_');
 end
 
 saveas(g,fullfile(CSV_filepath,out_name))
@@ -643,7 +643,7 @@ if ~sum_plot
         
     end
     
-    output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
+    output_name = [exp_name '_' title_ext '_' ylim_mode '.pdf'];
     
 else
     
@@ -692,9 +692,9 @@ else
     hold off
 
     if SICKO_coef_option
-        output_name = [exp_name '_' title_ext '_' ylim_mode '_wSICKO_Coeff.png'];
+        output_name = [exp_name '_' title_ext '_' ylim_mode '_wSICKO_Coeff.pdf'];
     else
-        output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
+        output_name = [exp_name '_' title_ext '_' ylim_mode '.pdf'];
     end
 end
 
@@ -769,9 +769,9 @@ if sum_plot
     hold off
 
     if SICKO_coef_option
-        output_name = [exp_name '_' title_ext '_' ylim_mode '_wSICKO_Coeff.png'];
+        output_name = [exp_name '_' title_ext '_' ylim_mode '_wSICKO_Coeff.pdf'];
     else
-        output_name = [exp_name '_' title_ext '_' ylim_mode '.png'];
+        output_name = [exp_name '_' title_ext '_' ylim_mode '.pdf'];
     end
 end
 
