@@ -5,7 +5,13 @@ This repository is a complete data computation and analysis package for the SICK
 
 For the post processing scripts please see [the Full statistical analysis and Figure production](https://github.com/lespejo1990/SICKO_Analysis) -- [https://github.com/lespejo1990/SICKO_Analysis](https://github.com/lespejo1990/SICKO_Analysis)
 
-SICKO was initially developed to qualtitively analyze infection progression of fluorescently tagged E. coli and P. aeruginosa in a C. elegans system, consequently SICKO can analyze any fluorescent-type signal in a longitudinal analysis of C. elegans
+## Usage
+
+SICKO was initially developed to quantitatively analyze infection progression of fluorescently tagged E. coli and P. aeruginosa in a C. elegans system, consequently SICKO can analyze any fluorescent-type signal in a longitudinal analysis of C. elegans
+
+## Preprint
+
+[Read our preprint here -- https://www.biorxiv.org/content/10.1101/2023.02.17.529009v2](https://www.biorxiv.org/content/10.1101/2023.02.17.529009v2)
 
 ## Features
 
