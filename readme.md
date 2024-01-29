@@ -2,7 +2,9 @@
 ![default_img](https://github.com/Sam-Freitas/SICKO/blob/main/scripts/analysis/out1.png)
 ###### Developed by [Samuel Freitas](https://github.com/Sam-Freitas), [Luis Espejo](https://github.com/lespejo1990), and [George Sutphin (PI)](https://mcb.arizona.edu/profile/george-sutphin) at the [University of Arizona](https://mcb.arizona.edu/)
 This repository is a complete data computation and analysis package for the SICKO -- Patent pending -- system.
+
 For the post processing scripts please see [the Full statistical analysis and Figure production](https://github.com/lespejo1990/SICKO_Analysis) -- [https://github.com/lespejo1990/SICKO_Analysis](https://github.com/lespejo1990/SICKO_Analysis)
+
 SICKO was initially developed to qualtitively analyze infection progression of fluorescently tagged E. coli and P. aeruginosa in a C. elegans system, consequently SICKO can analyze any fluorescent-type signal in a longitudinal analysis of C. elegans
 
 ## Features
