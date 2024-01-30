@@ -281,12 +281,12 @@ for i = 1:length(conditions)
     
     non_healthy_of_population = (num_died_infected_observed/worms_in_this_exp)...
         *remaining_after_passing(i) + died_during_passing_to_infection;
-    non_healthy_of_population_fraction = non_healthy_of_population/inital_count(i);
+    non_healthy_of_population_fraction = non_healthy_of_population/(inital_count(i) + died_during_passing);
         
     healthy_factor = 1/sqrt(1-non_healthy_of_population_fraction);
     
     unhealthy_factor = non_healthy_of_population./ ...
-        (abs((non_healthy_of_population - ...
+        (((non_healthy_of_population - ...
         (died_during_passing_to_infection + died_over_time_from_infection))));
     
     SICKO_coef_time(i,:) = healthy_factor*unhealthy_factor;
