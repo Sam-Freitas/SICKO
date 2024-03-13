@@ -1,6 +1,6 @@
 # SICKO - _**S**ystematic **I**maging of **C**. elegans **K**illing **O**rganisms_
 
-![default_img](https://github.com/Sam-Freitas/SICKO/blob/main/scripts/analysis/out1.png)
+![default_img](https://github.com/Sam-Freitas/SICKO/blob/main/header_img.png)
 
 ###### Developed by [Samuel Freitas](https://github.com/Sam-Freitas), [Luis Espejo](https://github.com/lespejo1990), and [George Sutphin (PI)](https://mcb.arizona.edu/profile/george-sutphin) at the [University of Arizona](https://mcb.arizona.edu/)
 
@@ -9,6 +9,16 @@ This repository is a complete data computation and analysis package for the SICK
 SICKO was initially developed to quantitatively analyze infection progression of fluorescently tagged E. coli and P. aeruginosa in a C. elegans system, consequently SICKO can analyze any fluorescent-type signal in a longitudinal analysis of C. elegans
 
 For the post processing scripts please see [the Full statistical analysis and Figure production](https://github.com/lespejo1990/SICKO_Analysis) -- [https://github.com/lespejo1990/SICKO_Analysis](https://github.com/lespejo1990/SICKO_Analysis)
+
+## Preprint
+
+[Read our preprint here -- https://www.biorxiv.org/content/10.1101/2023.02.17.529009v2](https://www.biorxiv.org/content/10.1101/2023.02.17.529009v2)
+
+## Features
+
+- Invidiualized longitudinal analysis of infected C. elegans
+- Automatic comparison and analysis
+- Automatic Heatmap creation
 
 ## Usage
 
@@ -27,23 +37,19 @@ The basic steps of using SICKO are:
 3) compile ----- compile_data.m
     - Explanation: Compiles the data from the 'experiment_name_N.csv' into a single longitudinal based array for each specific animal
     - Usage: When ran, select the 'experiment_name_N.csv'
-        - Output(s): 'experiment_name_N_compiled.csv'
+        - Output(s): a single csv in the 'outputs' folder titled 'experiment_name_N_compiled.csv'
 
 4) analyze ----- analyze_data_heatmap.m
+    - Explanation: Data analysis for the compiled data, and implementation of the 'SICKO coefficient' for deatn incorporation in logitudinal studies
+    - Usage: When ran, select the 'experiment_name_N_compiled.csv'
+    - if SICKO coefficient is to be used, select 'yes' on the next window and enter the associated numbers with the experiment
+        - Output(s): a single csv in the 'outputs' folder titled 'experiment_name_N_compiled_analyzed.csv'
+        - the cumulative sum and heatmap data graphs (with and without SICKO coefficient if 'yes' selected, otherwise just standard outputs)
 
 ### File setup
 
-![Example_file_setup.png](https://github.com/Sam-Freitas/SICKO/blob/main/scripts/analysis/out1.png)
+![Example_file_setup.png](https://github.com/Sam-Freitas/SICKO/blob/main/example_data_setup.png)
 
-## Preprint
-
-[Read our preprint here -- https://www.biorxiv.org/content/10.1101/2023.02.17.529009v2](https://www.biorxiv.org/content/10.1101/2023.02.17.529009v2)
-
-## Features
-
-- Invidiualized longitudinal analysis of infected C. elegans
-- Automatic comparison and analysis
-- Automatic Heatmap creation
 
 ## Required Packages
 
@@ -82,6 +88,6 @@ git clone https://github.com/Sam-Freitas/SICKO
 
 ## Example data (publication coming soon)
 
-![default_img2](https://github.com/Sam-Freitas/SICKO/blob/main/scripts/analysis/out2.png)
+![default_img2](https://github.com/Sam-Freitas/SICKO/blob/main/example_data_graph.png)
 
-![default_img3](https://github.com/Sam-Freitas/SICKO/blob/main/scripts/analysis/out3.png)
+![default_img3](https://github.com/Sam-Freitas/SICKO/blob/main/example_data_heatmap.png)
