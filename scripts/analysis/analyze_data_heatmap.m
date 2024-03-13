@@ -9,6 +9,8 @@
 clear all
 close all force hidden
 
+set(groot,'defaultFigurePaperPositionMode','manual')
+
 csv_output_header = ["Biological Replicate","Condition","ID (well location)",...
     "Is Dead","Is Last Day Censored","Last Day of Observation","First Day of nonzero data",...
     ...
@@ -281,7 +283,7 @@ for i = 1:length(conditions)
     
     non_healthy_of_population = (num_died_infected_observed/worms_in_this_exp)...
         *remaining_after_passing(i) + died_during_passing_to_infection;
-    non_healthy_of_population_fraction = non_healthy_of_population/(inital_count(i) + died_during_passing);
+    non_healthy_of_population_fraction = non_healthy_of_population/(inital_count(i) + died_during_passing(i));
         
     healthy_factor = 1/sqrt(1-non_healthy_of_population_fraction);
     
