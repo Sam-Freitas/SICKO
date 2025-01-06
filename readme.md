@@ -1,5 +1,7 @@
 # SICKO - _**S**ystematic **I**maging of **C**. elegans **K**illing **O**rganisms_
 
+## [paper published here](https://elifesciences.org/reviewed-preprints/102518v1)
+
 ![default_img](https://github.com/Sam-Freitas/SICKO/blob/main/header_img.png)
 
 ###### Developed by [Samuel Freitas](https://github.com/Sam-Freitas), [Luis Espejo](https://github.com/lespejo1990), and [George Sutphin (PI)](https://mcb.arizona.edu/profile/george-sutphin) at the [University of Arizona](https://mcb.arizona.edu/)
@@ -10,7 +12,9 @@ SICKO was initially developed to quantitatively analyze infection progression of
 
 For the post processing scripts please see [the Full statistical analysis and Figure production](https://github.com/lespejo1990/SICKO_Analysis) -- [https://github.com/lespejo1990/SICKO_Analysis](https://github.com/lespejo1990/SICKO_Analysis)
 
-## Preprint
+## Preprint/Paper
+
+[Read our paper here -- https://elifesciences.org/reviewed-preprints/102518v1](https://elifesciences.org/reviewed-preprints/102518v1)
 
 [Read our preprint here -- https://www.biorxiv.org/content/10.1101/2023.02.17.529009v2](https://www.biorxiv.org/content/10.1101/2023.02.17.529009v2)
 
